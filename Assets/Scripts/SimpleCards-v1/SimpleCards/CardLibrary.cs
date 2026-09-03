@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RogueToolkit.Core.Validation;
 using UnityEngine;
 
 // The asset your game points at. Two jobs, both dull but necessary:
@@ -118,67 +119,78 @@ public class CardLibrary : ScriptableObject
         return deck;
     }
 
-    // ---------------- editor sanity check ----------------
+    // ---------------- validation ----------------
 
-    // Right-click this asset in the Project window and choose "Check For Problems".
-    // Run it after adding or duplicating cards.
-    [ContextMenu("Check For Problems")]
-    public void CheckForProblems()
+    // Checks the library configuration without changing it.
+    //
+    // The important checks here are the ones that can make cards impossible
+    // to save/load or play correctly.
+    public ValidationResult Validate()
     {
-        int problems = 0;
+        ValidationResult result = new ValidationResult();
 
+        if (allCards == null)
+        {
+            result.AddError("All cards list is null.", this);
+            return result;
+        }
+
+        if (startingDeck == null)
+        {
+            result.AddError("Starting deck list is null.", this);
+        }
+
+        // Empty entries in All Cards are configuration errors.
         for (int i = 0; i < allCards.Count; i++)
         {
             if (allCards[i] == null)
             {
-                Debug.LogWarning("[" + name + "] All Cards has an empty slot at position " + i + ".", this);
-                problems++;
+                result.AddError("All cards contains a null entry at index " + i + ".", this);
             }
         }
 
-        // Duplicated IDs. Ctrl+D copies a card's hidden ID along with everything
-        // else, so two cards end up looking identical to a saved deck.
+        // A duplicated ID is fatal for ID-based saving/loading.
         for (int i = 0; i < allCards.Count; i++)
         {
-            if (allCards[i] == null) continue;
+            Card first = allCards[i];
+            if (first == null) continue;
 
             for (int j = i + 1; j < allCards.Count; j++)
             {
-                if (allCards[j] == null) continue;
+                Card second = allCards[j];
+                if (second == null) continue;
 
-                if (allCards[i].GetId() == allCards[j].GetId())
+                if (first.GetId() == second.GetId())
                 {
-                    Debug.LogError(
-                        "[" + name + "] '" + allCards[i].name + "' and '" + allCards[j].name +
-                        "' share the same hidden ID. This happens when you duplicate a card " +
-                        "with Ctrl+D. Fix it by right-clicking '" + allCards[j].name +
-                        "' and choosing 'Assign New Id'.", allCards[j]);
-                    problems++;
+                    result.AddError(
+                        "Two cards share the same hidden ID: '" + first.name +
+                        "' and '" + second.name + "'. Fix this by right-clicking '" +
+                        second.name + "' and choosing 'Assign New Id'.",
+                        second);
                 }
             }
         }
 
-        // Starting-deck cards missing from the pool. A saved deck could not be
-        // loaded back, because the ID would not be found.
-        for (int i = 0; i < startingDeck.Count; i++)
+        if (startingDeck != null)
         {
-            Card card = startingDeck[i];
-
-            if (card == null)
+            for (int i = 0; i < startingDeck.Count; i++)
             {
-                Debug.LogWarning("[" + name + "] Starting Deck has an empty slot at position "
-                                 + i + ".", this);
-                problems++;
-                continue;
-            }
+                Card card = startingDeck[i];
 
-            if (!allCards.Contains(card))
-            {
-                Debug.LogWarning(
-                    "[" + name + "] '" + card.name + "' is in the Starting Deck but not in " +
-                    "All Cards, so a saved deck could not load it back. Drag it into " +
-                    "All Cards too.", card);
-                problems++;
+                if (card == null)
+                {
+                    result.AddError(
+                        "Starting deck contains a null entry at index " + i + ".",
+                        this);
+                    continue;
+                }
+
+                if (!allCards.Contains(card))
+                {
+                    result.AddError(
+                        "'" + card.name + "' is in the starting deck but not in All Cards.",
+                        card);
+                }
             }
         }
 
@@ -189,16 +201,54 @@ public class CardLibrary : ScriptableObject
 
             if (card.NeedsATarget() && string.IsNullOrEmpty(card.targetKind))
             {
-                Debug.LogError("[" + name + "] '" + card.name + "' needs a target but its " +
-                               "Target Kind is empty, so it can never be played.", card);
-                problems++;
+                result.AddError(
+                    "'" + card.name + "' needs a target but its Target Kind is empty, " +
+                    "so it can never be played.",
+                    card);
+            }
+
+            if (card.tags == null)
+            {
+                result.AddError(
+                    "'" + card.name + "' has a null Tags list.",
+                    card);
             }
         }
 
-        if (problems == 0)
+        return result;
+    }
+
+    // Logs validation issues in the Unity Console.
+    // Kept separate from Validate() so the validation method remains useful to
+    // tests and other tools that want to inspect the result themselves.
+    private void LogValidationResult(ValidationResult result)
+    {
+        foreach (ValidationIssue issue in result.Issues)
+        {
+            if (issue.severity == ValidationIssue.Severity.Error)
+            {
+                Debug.LogError(issue.message, issue.source as Object);
+            }
+            else
+            {
+                Debug.LogWarning(issue.message, issue.source as Object);
+            }
+        }
+    }
+
+    // Right-click this asset in the Project window and choose "Check For Problems".
+    // Run it after adding or duplicating cards.
+    [ContextMenu("Check For Problems")]
+    public void CheckForProblems()
+    {
+        ValidationResult result = Validate();
+
+        if (!result.HasErrors)
         {
             Debug.Log("[" + name + "] No problems. " + allCards.Count + " cards, "
                       + startingDeck.Count + " in the starting deck.", this);
         }
+
+        LogValidationResult(result);
     }
 }
