@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin:0; }
+  img { max-width:100%; }
+  [hidden] { display:none !important; }
+</style>
+<title>Unity Polyomino Kit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground:#FBFCFD;
+    --panel:#F1F4F6;
+    --panel-2:#E8ECF0;
+    --line:#D2DAE1;
+    --line-soft:#E4E9ED;
+    --ink:#121A20;
+    --ink-2:#3D4B57;
+    --ink-3:#6B7885;
+    --accent:#41701C;
+    --accent-2:#2F5313;
+    --accent-wash:#E9F2DE;
+    --warn:#8F5313;
+    --warn-line:#D8A96C;
+    --warn-wash:#FAF1E4;
+    --code-ground:#111A21;
+    --code-ink:#D8E2E9;
+    --code-line:#25333D;
+    --code-dim:#7E909E;
+    --code-key:#A8D47C;
+    --code-str:#C8B478;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:#0D1216;
+      --panel:#151C22;
+      --panel-2:#1C252C;
+      --line:#293439;
+      --line-soft:#1F292F;
+      --ink:#E8EDF1;
+      --ink-2:#AFBCC6;
+      --ink-3:#7B8894;
+      --accent:#9DCB6C;
+      --accent-2:#C0DF9E;
+      --accent-wash:#1D2A13;
+      --warn:#DCA463;
+      --warn-line:#5C4527;
+      --warn-wash:#241C12;
+      --code-ground:#080D11;
+      --code-line:#1E2A32;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#0D1216;
+    --panel:#151C22;
+    --panel-2:#1C252C;
+    --line:#293439;
+    --line-soft:#1F292F;
+    --ink:#E8EDF1;
+    --ink-2:#AFBCC6;
+    --ink-3:#7B8894;
+    --accent:#9DCB6C;
+    --accent-2:#C0DF9E;
+    --accent-wash:#1D2A13;
+    --warn:#DCA463;
+    --warn-line:#5C4527;
+    --warn-wash:#241C12;
+    --code-ground:#080D11;
+    --code-line:#1E2A32;
+  }
+
+  * { box-sizing:border-box; }
+
+  body {
+    background:var(--ground); color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+
+  .shell { display:grid; grid-template-columns:1fr; max-width:1180px; margin:0 auto; padding:0 24px 96px; }
+  @media (min-width:1040px) {
+    .shell { grid-template-columns:200px minmax(0,1fr); gap:56px; padding-right:40px; }
+  }
+
+  .masthead { grid-column:1/-1; padding:52px 0 30px; border-bottom:1px solid var(--line); margin-bottom:44px; }
+  .eyebrow {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11.5px; font-weight:500; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 14px;
+  }
+  h1 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:700; font-size:clamp(2rem, 5vw, 2.85rem);
+    line-height:1.06; letter-spacing:-.026em; margin:0 0 16px; text-wrap:balance;
+  }
+  .standfirst { font-size:1.075rem; color:var(--ink-2); max-width:62ch; margin:0; }
+  .standfirst strong { color:var(--ink); font-weight:600; }
+
+  nav.toc { display:none; }
+  @media (min-width:1040px) {
+    nav.toc { display:block; position:sticky; top:32px; align-self:start; padding-top:4px; }
+  }
+  nav.toc ol { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  nav.toc a {
+    display:block; font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.5px; color:var(--ink-3); text-decoration:none;
+    padding:5px 0 5px 12px; border-left:2px solid var(--line-soft);
+    transition:color .14s, border-color .14s;
+  }
+  nav.toc a:hover, nav.toc a:focus-visible { color:var(--accent); border-left-color:var(--accent); }
+
+  main { min-width:0; display:flex; flex-direction:column; gap:52px; }
+  section { scroll-margin-top:24px; min-width:0; }
+
+  h2 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:600; font-size:1.45rem; letter-spacing:-.016em; margin:0 0 6px; text-wrap:balance;
+  }
+  h3 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:600; font-size:1.03rem; letter-spacing:-.008em; margin:0 0 8px;
+  }
+  .section-note { color:var(--ink-3); font-size:.925rem; margin:0 0 22px; max-width:64ch; }
+  p { max-width:66ch; margin:0 0 16px; }
+  p:last-child { margin-bottom:0; }
+  a { color:var(--accent-2); text-decoration-thickness:1px; text-underline-offset:2px; }
+
+  code {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.855em; background:var(--panel-2); border-radius:3px;
+    padding:.12em .34em; color:var(--ink);
+  }
+
+  .code { background:var(--code-ground); border:1px solid var(--code-line); border-radius:6px; margin:0 0 18px; overflow:hidden; }
+  .code-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:7px 12px; border-bottom:1px solid var(--code-line); }
+  .code-name { font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--code-dim); }
+  .copy {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--code-dim); background:transparent; border:1px solid var(--code-line);
+    border-radius:4px; padding:3px 9px; cursor:pointer; transition:color .14s, border-color .14s;
+  }
+  .copy:hover, .copy:focus-visible { color:var(--code-key); border-color:var(--code-key); }
+  .code pre {
+    margin:0; padding:14px 16px; overflow-x:auto;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.9px; line-height:1.72; color:var(--code-ink); tab-size:4;
+  }
+  .code pre b { color:var(--code-key); font-weight:500; }
+  .code pre i { color:var(--code-dim); font-style:normal; }
+  .code pre u { color:var(--code-str); text-decoration:none; }
+
+  ol.steps { list-style:none; counter-reset:s; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  ol.steps > li { counter-increment:s; position:relative; padding:12px 0 14px 46px; border-top:1px solid var(--line-soft); }
+  ol.steps > li:last-child { border-bottom:1px solid var(--line-soft); }
+  ol.steps > li::before {
+    content:counter(s); position:absolute; left:0; top:12px;
+    width:27px; height:27px; display:grid; place-items:center; border-radius:50%;
+    background:var(--accent-wash); color:var(--accent);
+    font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:12px; font-weight:600;
+  }
+  ol.steps p { margin:0; }
+  ol.steps p + p { margin-top:5px; color:var(--ink-3); font-size:.92rem; }
+
+  .three { display:grid; gap:10px; margin:0 0 18px; padding:0; list-style:none; counter-reset:part; }
+  @media (min-width:760px) { .three { grid-template-columns:repeat(3,1fr); } }
+  .three li {
+    counter-increment:part;
+    background:var(--panel); border:1px solid var(--line-soft);
+    border-radius:6px; padding:14px 16px;
+  }
+  .three li::before {
+    content:counter(part);
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; font-weight:600; color:var(--accent);
+    display:block; margin-bottom:6px;
+  }
+  .three h3 { margin-bottom:5px; }
+  .three p { font-size:.9rem; color:var(--ink-2); margin:0; max-width:none; }
+
+  .cards { display:grid; gap:10px; margin:0 0 18px; padding:0; list-style:none; }
+  @media (min-width:640px) { .cards { grid-template-columns:1fr 1fr; } }
+  .cards li { background:var(--panel); border:1px solid var(--line-soft); border-radius:6px; padding:14px 16px; }
+  .cards .fname {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.5px; font-weight:600; color:var(--accent); display:block; margin-bottom:5px;
+  }
+  .cards p { font-size:.91rem; color:var(--ink-2); margin:0; max-width:none; }
+
+  .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel); }
+  table { border-collapse:collapse; width:100%; min-width:600px; font-size:.9rem; }
+  caption {
+    text-align:left; font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
+    padding:11px 16px; border-bottom:1px solid var(--line);
+  }
+  thead td { font-family:Archivo, sans-serif; font-weight:600; font-size:.84rem; color:var(--ink); white-space:nowrap; border-bottom:1px solid var(--line); }
+  tbody tr + tr { border-top:1px solid var(--line-soft); }
+  td { padding:9px 16px; vertical-align:top; }
+  td:first-child { font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:12.4px; white-space:nowrap; color:var(--ink); }
+  td:last-child { color:var(--ink-2); }
+  .api-group td { background:var(--panel-2); font-family:Archivo, sans-serif; font-weight:600; font-size:.86rem; color:var(--ink); white-space:normal; }
+  .recipes td { font-family:"IBM Plex Sans", sans-serif; font-size:.86rem; white-space:normal; color:var(--ink-2); }
+  .recipes td:first-child { font-family:"IBM Plex Sans", sans-serif; font-size:.88rem; color:var(--ink); font-weight:500; white-space:normal; }
+  .recipes td.mono { font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11.8px; color:var(--accent-2); white-space:nowrap; }
+
+  figure { margin:0 0 18px; }
+  .diagram { background:var(--panel); border:1px solid var(--line-soft); border-radius:6px; padding:18px 16px 12px; overflow-x:auto; }
+  .diagram svg { display:block; width:100%; min-width:600px; height:auto; }
+  figcaption { font-size:.86rem; color:var(--ink-3); margin-top:11px; max-width:66ch; }
+
+  .warn { background:var(--warn-wash); border:1px solid var(--warn-line); border-radius:6px; padding:16px 18px; margin:0 0 12px; }
+  .warn h3 { color:var(--warn); margin-bottom:6px; }
+  .warn p { color:var(--ink-2); font-size:.94rem; }
+  .warn code { background:rgba(143,83,19,.11); }
+
+  dl.outgrow { margin:0; display:flex; flex-direction:column; }
+  dl.outgrow div { padding:13px 0; border-top:1px solid var(--line-soft); }
+  dl.outgrow div:last-child { border-bottom:1px solid var(--line-soft); }
+  dt { font-family:Archivo, sans-serif; font-weight:600; font-size:.97rem; margin-bottom:3px; }
+  dd { margin:0; color:var(--ink-2); font-size:.93rem; max-width:64ch; }
+
+  footer { grid-column:1/-1; margin-top:60px; padding-top:22px; border-top:1px solid var(--line); font-size:.86rem; color:var(--ink-3); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <p class="eyebrow">Unity · ScriptableObjects · C# basics</p>
+    <h1>Unity Polyomino Kit</h1>
+    <p class="standfirst">Things on a grid that know where they are, what's next to them, and what's on their row and column — and interact accordingly. Backpack inventories, base building, tile puzzles, card boards. Pieces can be tetromino-shaped and rotatable, or plain 1×1 squares; placed by the player, or fixed in place by the game. <strong>You draw shapes as text</strong>, so there's no custom Inspector to write.</p>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#why">Why it's not hard</a></li>
+      <li><a href="#files">The files</a></li>
+      <li><a href="#setup">Setup</a></li>
+      <li><a href="#shapes">Shapes as text</a></li>
+      <li><a href="#board">The board</a></li>
+      <li><a href="#fixed">1×1, and fixed things</a></li>
+      <li><a href="#rules">Writing rules</a></li>
+      <li><a href="#api">Everything you can call</a></li>
+      <li><a href="#drag">Recipe: drag and drop</a></li>
+      <li><a href="#tooltip">Recipe: tooltips</a></li>
+      <li><a href="#gotchas">Four gotchas</a></li>
+      <li><a href="#outgrow">Outgrowing it</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="why">
+      <h2>Why it's not as hard as it looks</h2>
+      <p class="section-note">It's three problems that don't touch each other. Tangled together they're horrible; separated, none of them is difficult.</p>
+      <ul class="three">
+        <li>
+          <h3>Shape and rotation</h3>
+          <p>Pure maths on a set of squares. Knows nothing about Unity or your game, which is why it can be tested against shapes drawn on paper.</p>
+        </li>
+        <li>
+          <h3>The board</h3>
+          <p>Does it fit? What's in this square? A 2D array of references and some bounds checks. Genuinely the easy bit.</p>
+        </li>
+        <li>
+          <h3>The neighbour rules</h3>
+          <p>Pure data you author in the Inspector with dropdowns. No code per piece, and both "I gain" and "I give" directions work.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="files">
+      <h2>The files</h2>
+      <p class="section-note">Six files, one per idea.</p>
+      <ul class="cards">
+        <li><span class="fname">PieceShape.cs</span><p>Text → squares → rotations. Pure maths, no Unity involved.</p></li>
+        <li><span class="fname">AdjacencyRule.cs</span><p>One "look around me" rule, plus the stat/amount pair.</p></li>
+        <li><span class="fname">GridPiece.cs</span><p>One kind of piece: shape, tags, base stats, rules.</p></li>
+        <li><span class="fname">PieceGrid.cs</span><p>The board, plus PlacedPiece — one copy sitting on it.</p></li>
+        <li><span class="fname">GridEvaluator.cs</span><p>Works out what everything is worth, and explains why.</p></li>
+        <li><span class="fname">GridExample.cs</span><p>Zero-setup demo. Press Play, read the Console. Delete once it clicks.</p></li>
+      </ul>
+    </section>
+
+    <section id="setup">
+      <h2>Setup, about one minute</h2>
+      <ol class="steps">
+        <li><p>Copy the six <code>.cs</code> files into your project and let Unity compile.</p></li>
+        <li>
+          <p>Add the <strong>Grid Example</strong> component to an empty GameObject and press Play.</p>
+          <p>You'll get a 5×5 bag drawn in the Console, a sword's rotations, four pieces packed in, a refused move, and the full stat breakdown before and after.</p>
+        </li>
+        <li>
+          <p>Now author your own: <strong>right-click → Create → Grid → Piece</strong>. Draw the shape in the <strong>Shape Mask</strong> box, add a tag or two, and give it some <strong>Base Stats</strong>.</p>
+          <p>Right-click the asset and pick <strong>Print Shape And Rotations</strong> to check you drew what you meant.</p>
+        </li>
+        <li><p>Add <strong>Rules</strong> to make pieces care about their neighbours. The recipe table below covers most of what you'll want.</p></li>
+      </ol>
+    </section>
+
+    <section id="shapes">
+      <h2>Shapes as text</h2>
+      <p class="section-note">The trick that keeps this kit small. No custom editor, and you can read a shape at a glance in the Inspector.</p>
+      <figure>
+        <div class="diagram">
+          <svg viewBox="0 0 640 150" role="img" aria-label="A T-shaped mask written as two lines of text, dot X dot above X X X, becomes four rotations: stem down, stem left, stem up, stem right.">
+            <rect x="10" y="36" width="104" height="56" rx="5" fill="var(--ground)" stroke="var(--line)"></rect>
+            <g font-family="'IBM Plex Mono', monospace" font-size="15" fill="var(--ink)">
+              <text x="32" y="60">.X.</text>
+              <text x="32" y="80">XXX</text>
+            </g>
+            <text x="62" y="110" font-family="'IBM Plex Sans', sans-serif" font-size="10" fill="var(--ink-3)" text-anchor="middle">what you type</text>
+
+            <g stroke="var(--ink-3)" stroke-width="1.4" fill="none">
+              <path d="M 126 64 L 158 64"></path>
+              <path d="M 152 59 L 159 64 L 152 69" fill="var(--ink-3)"></path>
+            </g>
+
+            <g stroke="var(--accent)" stroke-width="1">
+              <rect x="180" y="52" width="16" height="16" fill="var(--panel-2)" stroke="var(--line)"></rect>
+              <rect x="196" y="52" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="212" y="52" width="16" height="16" fill="var(--panel-2)" stroke="var(--line)"></rect>
+              <rect x="180" y="68" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="196" y="68" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="212" y="68" width="16" height="16" fill="var(--accent-wash)"></rect>
+
+              <rect x="302" y="44" width="16" height="16" fill="var(--panel-2)" stroke="var(--line)"></rect>
+              <rect x="318" y="44" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="302" y="60" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="318" y="60" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="302" y="76" width="16" height="16" fill="var(--panel-2)" stroke="var(--line)"></rect>
+              <rect x="318" y="76" width="16" height="16" fill="var(--accent-wash)"></rect>
+
+              <rect x="410" y="52" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="426" y="52" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="442" y="52" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="410" y="68" width="16" height="16" fill="var(--panel-2)" stroke="var(--line)"></rect>
+              <rect x="426" y="68" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="442" y="68" width="16" height="16" fill="var(--panel-2)" stroke="var(--line)"></rect>
+
+              <rect x="532" y="44" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="548" y="44" width="16" height="16" fill="var(--panel-2)" stroke="var(--line)"></rect>
+              <rect x="532" y="60" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="548" y="60" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="532" y="76" width="16" height="16" fill="var(--accent-wash)"></rect>
+              <rect x="548" y="76" width="16" height="16" fill="var(--panel-2)" stroke="var(--line)"></rect>
+            </g>
+
+            <g font-family="'IBM Plex Mono', monospace" font-size="10" fill="var(--ink-3)" text-anchor="middle">
+              <text x="204" y="110">rotation 0</text>
+              <text x="318" y="110">rotation 1</text>
+              <text x="434" y="110">rotation 2</text>
+              <text x="548" y="110">rotation 3</text>
+            </g>
+            <text x="376" y="136" font-family="'IBM Plex Sans', sans-serif" font-size="10.5" fill="var(--ink-3)" text-anchor="middle">worked out for you — you only ever draw the first one</text>
+          </svg>
+        </div>
+        <figcaption>Anything that isn't a dot, space or tab counts as filled, so <code>X</code>, <code>#</code> and <code>O</code> all work. Rows read top to bottom, which is why <strong>y goes down</strong> everywhere in this kit — the same direction Unity's UI fills a grid.</figcaption>
+      </figure>
+      <p>Rotations that come out identical are dropped. A 2×2 square reports <strong>one</strong> rotation and a straight line reports <strong>two</strong>, so rotating in your UI never appears to do nothing. Rotation numbers also wrap in both directions, which means <code>rotation++</code> and <code>rotation--</code> are safe forever with no range checks.</p>
+    </section>
+
+    <section id="board">
+      <h2>The board</h2>
+      <p class="section-note">Boards are drawn as text too, with <code>#</code> for a square that can't be used.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">An awkwardly-shaped rucksack</span><button class="copy" type="button">Copy</button></div>
+<pre>PieceGrid bag = PieceGrid.FromMask(
+    <u>"....#\n"</u> +
+    <u>".....\n"</u> +
+    <u>".....\n"</u> +
+    <u>".....\n"</u> +
+    <u>"#...."</u>);
+
+<i>// Or just a plain rectangle:</i>
+PieceGrid chest = <b>new</b> PieceGrid(8, 4);</pre>
+      </div>
+      <p><code>(0,0)</code> is the top-left square, <code>x</code> goes right and <code>y</code> goes <strong>down</strong>. No mental flipping between the mask you drew and the coordinates you pass in.</p>
+      <p>Two methods do almost all the work. <code>CanPlace</code> tells you whether a piece fits — that's what colours your drag preview green or red — and <code>Place</code> puts it down, handing back a <code>PlacedPiece</code> or null:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Placing and moving</span><button class="copy" type="button">Copy</button></div>
+<pre><b>if</b> (bag.CanPlace(sword, rotation, x, y)) { preview.color = Color.green; }
+
+PlacedPiece placed = bag.Place(sword, rotation, x, y);   <i>// null if it did not fit</i>
+PlacedPiece loot   = bag.PlaceAnywhere(potion);          <i>// your "pick up" button</i>
+
+bag.Remove(placed);
+
+<i>// Moving hands back a NEW placed piece. If it does not fit you get null and
+// nothing changes, so a failed drag cannot lose the player's item.</i>
+PlacedPiece moved = bag.TryMove(placed, newRotation, x, y);
+<b>if</b> (moved != <b>null</b>) placed = moved;</pre>
+      </div>
+      <p>When you're wondering why something won't go where you expect, print the board before reaching for the debugger:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">The fastest debugging you will do all week</span><button class="copy" type="button">Copy</button></div>
+<pre>Debug.Log(bag.ToText() + <u>"\n"</u> + bag.ToLegend());
+
+<i>// ABBD#
+// ABBDD
+// AC..D
+// .....
+// #....
+// A = Sword, B = Shield, C = Ruby Gem, D = Rations</i></pre>
+      </div>
+    </section>
+
+    <section id="fixed">
+      <h2>1×1 pieces, and things the game places</h2>
+      <p class="section-note">Two variations that cover a whole other family of games: city grids, slot inventories, board layouts.</p>
+
+      <h3>If everything is 1×1</h3>
+      <p>Perfectly normal, and probably the commonest case. Just use <code>"X"</code> as the shape mask. Every piece then reports <strong>one</strong> rotation, so the whole rotation system quietly gets out of your way — <code>PlaceAnywhere</code> stops trying alternatives, rotating in your UI correctly does nothing, and you can pass <code>0</code> for rotation everywhere and forget it exists.</p>
+      <p>You keep the part that actually matters: pieces knowing their location, their neighbours, their row and column, and how they interact. Nothing else in the kit changes.</p>
+
+      <h3>Things the game places</h3>
+      <p>Terrain, obstacles, a pre-built town hall, a well in the middle of the map. They take part in every rule but the player must not be able to move or bulldoze them:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Laying out a level</span><button class="copy" type="button">Copy</button></div>
+<pre><i>// The game lays out the terrain first...</i>
+PlacedPiece well = map.PlaceLocked(wellPiece, 0, 2, 2);
+PlacedPiece rock = map.PlaceLocked(rockPiece, 0, 0, 4);
+
+<i>// ...then the player builds on it.</i>
+PlacedPiece hut = map.Place(hutPiece, 0, 1, 1);
+
+map.Remove(well);              <i>// false - refused, it is the game's</i>
+map.TryMove(well, 0, 4, 4);    <i>// null  - refused</i>
+map.Remove(hut);               <i>// true  - the player's own, fine</i>
+
+map.ClearUnlocked();           <i>// "reset my layout" - terrain survives</i>
+map.RemoveEvenIfLocked(well);  <i>// your own code can still destroy it</i></pre>
+      </div>
+      <p>Locked pieces are ordinary pieces as far as the rules engine is concerned — they give and receive bonuses exactly like anything else. So a well that buffs everything within two squares is one <code>PlaceLocked</code> call and one aura rule.</p>
+      <p>In <code>ToText()</code> they draw as a <strong>lowercase</strong> letter and the legend marks them <code>(fixed)</code>, so one glance tells you what the player owns:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">A city grid of 1×1 pieces</span><button class="copy" type="button">Copy</button></div>
+<pre><i>// .....
+// .E...     a = Well (fixed), b = Rock (fixed)
+// .CaDF     C = House, D = House, E = Park, F = Factory
+// .....
+// b....
+//
+// House at 1,2: happiness -1, population +7
+//     +4 population base
+//     +1 population from Well within 2
+//     +2 population from 1 touching park
+//     -1 happiness from 1 on the same row factory</i></pre>
+      </div>
+      <p>That example is four rules and six <code>Place</code> calls — location, neighbours, row effects and an aura from a fixed feature, all from the same kit.</p>
+    </section>
+
+    <section id="rules">
+      <h2>Writing rules</h2>
+      <p class="section-note">Read a rule left to right like a sentence. All of it is Inspector dropdowns — you write no code per piece.</p>
+      <p>"For each <strong>touching</strong> piece tagged <strong>weapon</strong>, give <strong>me</strong> <strong>+1 attack</strong>." Here's how the common effects come out:</p>
+      <div class="table-wrap">
+        <table class="recipes">
+          <caption>Recipes</caption>
+          <thead>
+            <tr>
+              <td>What you want</td><td>scope</td><td>tag</td><td>target</td><td>counting</td><td>amount</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>+1 attack per touching weapon</td>
+              <td class="mono">Touching</td><td class="mono">weapon</td><td class="mono">Me</td><td class="mono">PerNeighbour</td><td class="mono">1</td>
+            </tr>
+            <tr>
+              <td>+5 defence if next to any food</td>
+              <td class="mono">Touching</td><td class="mono">food</td><td class="mono">Me</td><td class="mono">OnceIfAnyFound</td><td class="mono">5</td>
+            </tr>
+            <tr>
+              <td>−2 if nothing is touching me</td>
+              <td class="mono">Touching</td><td class="mono">(empty)</td><td class="mono">Me</td><td class="mono">OnceIfNoneFound</td><td class="mono">−2</td>
+            </tr>
+            <tr>
+              <td>Buff everything within 2 squares</td>
+              <td class="mono">WithinDistance 2</td><td class="mono">(empty)</td><td class="mono">EachMatchingNeighbour</td><td class="mono">—</td><td class="mono">2</td>
+            </tr>
+            <tr>
+              <td>Curse my orthogonal neighbours</td>
+              <td class="mono">Touching</td><td class="mono">(empty)</td><td class="mono">EachMatchingNeighbour</td><td class="mono">—</td><td class="mono">−2</td>
+            </tr>
+            <tr>
+              <td>+1 gold per gem on my row</td>
+              <td class="mono">SameRow</td><td class="mono">gem</td><td class="mono">Me</td><td class="mono">PerNeighbour</td><td class="mono">1</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:18px">An empty tag means "any piece at all". Negative amounts are debuffs. <code>counting</code> is ignored when the target is <code>EachMatchingNeighbour</code> — each match gets the amount once.</p>
+      <p><strong>Both directions work, and that matters.</strong> "I like being near weapons" is a rule on the sword; "I make my neighbours stronger" is a rule on the gem. Use whichever reads more naturally for the piece you're designing rather than contorting one into the other.</p>
+      <p><code>Touching</code> means sharing an edge. <code>TouchingOrDiagonal</code> also counts corners. <code>WithinDistance</code> is an aura, counting a diagonal step as one.</p>
+    </section>
+
+    <section id="api">
+      <h2>Everything you can call</h2>
+      <p class="section-note">The complete surface.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Reference</caption>
+          <tbody>
+            <tr class="api-group"><td colspan="2">PieceGrid — the board</td></tr>
+            <tr><td>new PieceGrid(w, h)</td><td>A plain rectangle.</td></tr>
+            <tr><td>PieceGrid.FromMask(text)</td><td>An odd shape, with # for unusable squares.</td></tr>
+            <tr><td>CanPlace(piece, rot, x, y)</td><td>Would it fit? For your drag preview.</td></tr>
+            <tr><td>Place(piece, rot, x, y)</td><td>Puts it down. Returns the PlacedPiece, or null.</td></tr>
+            <tr><td>PlaceLocked(piece, rot, x, y)</td><td>Something the GAME owns. The player cannot move or remove it.</td></tr>
+            <tr><td>PlaceAnywhere(piece)</td><td>Finds the first free spot, trying every rotation.</td></tr>
+            <tr><td>TryMove(placed, rot, x, y)</td><td>Moves it. Returns a NEW PlacedPiece, or null and no change.</td></tr>
+            <tr><td>Remove(placed)</td><td>Takes it off the board. Refuses locked pieces.</td></tr>
+            <tr><td>RemoveEvenIfLocked(placed)</td><td>The escape hatch, for your own code.</td></tr>
+            <tr><td>ClearUnlocked()</td><td>Clears the player's layout, leaving the game's terrain.</td></tr>
+            <tr><td>GetPieceAt(x, y)</td><td>What's in that square, or null.</td></tr>
+            <tr><td>IsFree(x, y)</td><td>Inside, not blocked, nothing on it.</td></tr>
+            <tr><td>SetBlocked(x, y, bool)</td><td>Make a square unusable at runtime.</td></tr>
+            <tr><td>GetAllPieces()</td><td>Everything on the board.</td></tr>
+            <tr><td>CountFreeSquares()</td><td>How much room is left.</td></tr>
+            <tr><td>ToText() / ToLegend()</td><td>ASCII render for Debug.Log.</td></tr>
+
+            <tr class="api-group"><td colspan="2">PlacedPiece — one copy on the board</td></tr>
+            <tr><td>piece</td><td>Which kind of piece it is. Cast it to reach your own fields.</td></tr>
+            <tr><td>rotation, x, y</td><td>Where and which way up.</td></tr>
+            <tr><td>locked</td><td>True if the game placed it rather than the player.</td></tr>
+            <tr><td>cells</td><td>The board squares it covers, worked out once when placed.</td></tr>
+
+            <tr class="api-group"><td colspan="2">PieceShape — via piece.GetShape()</td></tr>
+            <tr><td>RotationCount</td><td>How many DIFFERENT rotations this shape has.</td></tr>
+            <tr><td>GetCells(rotation)</td><td>Offsets from the top-left. Rotation numbers wrap.</td></tr>
+            <tr><td>GetWidth / GetHeight</td><td>Bounding box of that rotation.</td></tr>
+            <tr><td>ToMask(rotation)</td><td>Draws it back out as text, for Debug.Log.</td></tr>
+
+            <tr class="api-group"><td colspan="2">GridEvaluator — what is it all worth</td></tr>
+            <tr><td>Evaluate(grid)</td><td>Returns a GridReport. Call it again after any change.</td></tr>
+            <tr><td>report.GetTotal(stat)</td><td>The board's total for one stat.</td></tr>
+            <tr><td>report.GetStatNames()</td><td>Every stat actually in play, sorted.</td></tr>
+            <tr><td>report.GetReportFor(placed)</td><td>One piece's own numbers.</td></tr>
+            <tr><td>pieceReport.GetStat(name)</td><td>That piece's total for one stat.</td></tr>
+            <tr><td>pieceReport.explanations</td><td>Where every point came from, in words.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="drag">
+      <h2>Recipe: drag and drop</h2>
+      <p class="section-note">The four moments that matter. Everything else is your own UI.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">BagUI.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>private</b> PieceGrid bag;
+<b>private</b> PlacedPiece dragging;   <i>// null when nothing is being dragged</i>
+<b>private</b> <b>int</b> dragRotation;
+
+<i>// 1. Picked up: take it off the board so it cannot block itself.</i>
+<b>public void</b> OnPickUp(PlacedPiece placed)
+{
+    dragging = placed;
+    dragRotation = placed.rotation;
+    bag.Remove(placed);
+    Redraw();
+}
+
+<i>// 2. R to rotate. No range check needed - rotation numbers wrap.</i>
+<b>void</b> Update()
+{
+    <b>if</b> (dragging != <b>null</b> &amp;&amp; Input.GetKeyDown(KeyCode.R)) dragRotation++;
+}
+
+<i>// 3. Hovering: colour the preview.</i>
+<b>public void</b> OnHover(<b>int</b> x, <b>int</b> y)
+{
+    <b>if</b> (dragging == <b>null</b>) <b>return</b>;
+
+    <b>bool</b> fits = bag.CanPlace(dragging.piece, dragRotation, x, y);
+    preview.color = fits ? Color.green : Color.red;
+}
+
+<i>// 4. Dropped.</i>
+<b>public void</b> OnDrop(<b>int</b> x, <b>int</b> y)
+{
+    <b>if</b> (dragging == <b>null</b>) <b>return</b>;
+
+    PlacedPiece placed = bag.Place(dragging.piece, dragRotation, x, y);
+
+    <b>if</b> (placed == <b>null</b>)
+    {
+        <i>// Would not fit. Put it back exactly where it came from - never
+        // leave the player's item in limbo.</i>
+        bag.Place(dragging.piece, dragging.rotation, dragging.x, dragging.y);
+    }
+
+    dragging = <b>null</b>;
+    Redraw();
+}
+
+<b>void</b> Redraw()
+{
+    <i>// Recalculate from scratch. Do not try to keep totals updated as you go.</i>
+    GridReport report = GridEvaluator.Evaluate(bag);
+
+    attackLabel.text = <u>"Attack "</u> + report.GetTotal(<u>"attack"</u>);
+    defenceLabel.text = <u>"Defence "</u> + report.GetTotal(<u>"defence"</u>);
+
+    <i>// ...draw the squares from bag.GetAllPieces()</i>
+}</pre>
+      </div>
+      <p>Taking the piece off the board on pick-up is the detail people miss. Leave it on and it blocks its own destination, so nudging something one square to the left mysteriously fails. (If you'd rather not remove it, <code>TryMove</code> handles the same problem for you by ignoring the piece being moved.)</p>
+    </section>
+
+    <section id="tooltip">
+      <h2>Recipe: tooltips that explain themselves</h2>
+      <p class="section-note">The reason the evaluator returns explanations rather than just numbers.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Hovering a piece</span><button class="copy" type="button">Copy</button></div>
+<pre><b>public void</b> ShowTooltip(PlacedPiece placed)
+{
+    GridReport report = GridEvaluator.Evaluate(bag);
+    PieceReport mine = report.GetReportFor(placed);
+
+    <b>string</b> text = placed.GetDisplayName() + <u>"\n"</u> + mine.DescribeStats();
+
+    <b>foreach</b> (<b>string</b> line <b>in</b> mine.explanations)
+    {
+        text += <u>"\n  "</u> + line;
+    }
+
+    tooltipLabel.text = text;
+
+    <i>// Sword
+    //   attack +6
+    //     +3 attack base
+    //     +1 attack from 1 touching armour
+    //     +2 attack from Ruby Gem within 2</i>
+}</pre>
+      </div>
+      <p>That breakdown is also how you debug a rule that isn't firing — you can see at a glance whether it matched nothing, or matched and gave the wrong amount.</p>
+    </section>
+
+    <section id="gotchas">
+      <h2>Four gotchas</h2>
+      <p class="section-note">The first is the classic bug in systems like this. It has a test named after it.</p>
+      <div class="warn">
+        <h3>Neighbours are distinct pieces, not shared edges</h3>
+        <p>A 1×3 sword lying along a 2×2 shield touches it across <em>two</em> squares — but it's still <em>one</em> shield, and a "+1 per touching armour" rule gives +1, not +2. The kit counts distinct pieces. Worth knowing because if you ever write your own version of this, counting edges is the mistake you'll make.</p>
+      </div>
+      <div class="warn">
+        <h3>TryMove hands back a new PlacedPiece</h3>
+        <p>The old one is off the board and no longer valid. Always use the returned value. On failure it returns null and changes nothing, so a failed drag can't lose the player's item — but a stale reference will silently stop working.</p>
+      </div>
+      <div class="warn">
+        <h3>Re-evaluate from scratch, always</h3>
+        <p>Don't try to keep totals updated incrementally as pieces move. One piece moving can change three others' bonuses through an aura, and incremental updates are exactly where this kind of system rots. On a board a human can arrange, <code>Evaluate</code> costs nothing.</p>
+      </div>
+      <div class="warn">
+        <h3>Ctrl+D copies a piece's hidden ID</h3>
+        <p>Same as the other kits: duplicating a piece asset copies its ID, so two pieces look identical to a save file. Right-click the copy → <strong>Assign New Id</strong>. And <strong>Print Shape And Rotations</strong> on any piece is the quickest way to confirm you drew what you meant.</p>
+      </div>
+    </section>
+
+    <section id="outgrow">
+      <h2>Outgrowing it</h2>
+      <p class="section-note">What this deliberately doesn't do.</p>
+      <dl class="outgrow">
+        <div>
+          <dt>Mirrored pieces</dt>
+          <dd>Only the four rotations, no flipping. An L and its mirror image J are two different pieces here — which is how Tetris treats them anyway. If you need flipping, add a mirrored mask as a second asset.</dd>
+        </div>
+        <div>
+          <dt>Rules that depend on other rules</dt>
+          <dd>Every rule reads the board, never another rule's result, so evaluation is one clean pass. "+1 attack for each neighbour that already has +2 attack" isn't expressible, and that's on purpose — those chains are where the numbers become impossible to reason about.</dd>
+        </div>
+        <div>
+          <dt>Hex or triangular grids</dt>
+          <dd>Squares only. Hexes need different neighbour maths throughout, though the shape-as-text and rules-as-data ideas would carry over.</dd>
+        </div>
+        <div>
+          <dt>Saving a packed board</dt>
+          <dd>Pieces carry the same hidden IDs as the other kits, so it's straightforward — save each placed piece's id, rotation, x, y and locked flag, and place them again on load. Ask and I'll add it.</dd>
+        </div>
+        <div>
+          <dt>Very large boards</dt>
+          <dd>Evaluation walks every piece against every rule. Fine for hundreds of pieces; if you're at thousands and evaluating every frame, cache the report and only recompute on change.</dd>
+        </div>
+      </dl>
+    </section>
+
+  </main>
+
+  <footer>
+    Version 2. Six scripts, checked with 141 automated tests. The rotation maths is verified against shapes drawn on paper first — every rotation of the I, O, T, S and L tetrominoes compared to a hand-written expected mask, so a regression can't hide behind the code agreeing with itself. Also covered: mask parsing, symmetry deduplication, rotation wrapping in both directions, bounds and blocked squares, overlap refusal, move-and-restore, auto-placement with rotation, locked pieces, and every rule scope, counting mode and target including distinct-neighbour counting, self-exclusion, auras and debuffs.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll(".copy").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var block = button.closest(".code");
+      var pre = block ? block.querySelector("pre") : null;
+      if (!pre) return;
+
+      var done = function (label) {
+        button.textContent = label;
+        setTimeout(function () { button.textContent = "Copy"; }, 1600);
+      };
+
+      try {
+        navigator.clipboard.writeText(pre.innerText).then(
+          function () { done("Copied"); },
+          function () { done("Select it"); }
+        );
+      } catch (e) {
+        done("Select it");
+      }
+    });
+  });
+</script>
+</body>
+</html>

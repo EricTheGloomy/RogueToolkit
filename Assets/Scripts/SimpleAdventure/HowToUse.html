@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin:0; }
+  img { max-width:100%; }
+  [hidden] { display:none !important; }
+</style>
+<title>Unity Adventure Kit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground:#FBFCFD;
+    --panel:#F1F4F6;
+    --panel-2:#E8ECF0;
+    --line:#D2DAE1;
+    --line-soft:#E4E9ED;
+    --ink:#121A20;
+    --ink-2:#3D4B57;
+    --ink-3:#6B7885;
+    --accent:#8E3A63;
+    --accent-2:#6E2A4B;
+    --accent-wash:#F6E7EE;
+    --warn:#8F5313;
+    --warn-line:#D8A96C;
+    --warn-wash:#FAF1E4;
+    --code-ground:#111A21;
+    --code-ink:#D8E2E9;
+    --code-line:#25333D;
+    --code-dim:#7E909E;
+    --code-key:#DE9CBD;
+    --code-str:#C8B478;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:#0D1216;
+      --panel:#151C22;
+      --panel-2:#1C252C;
+      --line:#293439;
+      --line-soft:#1F292F;
+      --ink:#E8EDF1;
+      --ink-2:#AFBCC6;
+      --ink-3:#7B8894;
+      --accent:#DE87B0;
+      --accent-2:#EFAECC;
+      --accent-wash:#2C1622;
+      --warn:#DCA463;
+      --warn-line:#5C4527;
+      --warn-wash:#241C12;
+      --code-ground:#080D11;
+      --code-line:#1E2A32;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#0D1216;
+    --panel:#151C22;
+    --panel-2:#1C252C;
+    --line:#293439;
+    --line-soft:#1F292F;
+    --ink:#E8EDF1;
+    --ink-2:#AFBCC6;
+    --ink-3:#7B8894;
+    --accent:#DE87B0;
+    --accent-2:#EFAECC;
+    --accent-wash:#2C1622;
+    --warn:#DCA463;
+    --warn-line:#5C4527;
+    --warn-wash:#241C12;
+    --code-ground:#080D11;
+    --code-line:#1E2A32;
+  }
+
+  * { box-sizing:border-box; }
+
+  body {
+    background:var(--ground);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .shell {
+    display:grid;
+    grid-template-columns:1fr;
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 24px 96px;
+  }
+  @media (min-width:1040px) {
+    .shell { grid-template-columns:200px minmax(0,1fr); gap:56px; padding-right:40px; }
+  }
+
+  .masthead {
+    grid-column:1/-1;
+    padding:52px 0 30px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:44px;
+  }
+  .eyebrow {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11.5px;
+    font-weight:500;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 14px;
+  }
+  h1 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:700;
+    font-size:clamp(2rem, 5vw, 2.85rem);
+    line-height:1.06;
+    letter-spacing:-.026em;
+    margin:0 0 16px;
+    text-wrap:balance;
+  }
+  .standfirst {
+    font-size:1.075rem;
+    color:var(--ink-2);
+    max-width:62ch;
+    margin:0;
+  }
+  .standfirst strong { color:var(--ink); font-weight:600; }
+
+  nav.toc { display:none; }
+  @media (min-width:1040px) {
+    nav.toc { display:block; position:sticky; top:32px; align-self:start; padding-top:4px; }
+  }
+  nav.toc ol { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  nav.toc a {
+    display:block;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.5px;
+    color:var(--ink-3);
+    text-decoration:none;
+    padding:5px 0 5px 12px;
+    border-left:2px solid var(--line-soft);
+    transition:color .14s, border-color .14s;
+  }
+  nav.toc a:hover, nav.toc a:focus-visible { color:var(--accent); border-left-color:var(--accent); }
+
+  main { min-width:0; display:flex; flex-direction:column; gap:52px; }
+  section { scroll-margin-top:24px; min-width:0; }
+
+  h2 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:600; font-size:1.45rem; letter-spacing:-.016em;
+    margin:0 0 6px; text-wrap:balance;
+  }
+  h3 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:600; font-size:1.03rem; letter-spacing:-.008em; margin:0 0 8px;
+  }
+  .section-note { color:var(--ink-3); font-size:.925rem; margin:0 0 22px; max-width:64ch; }
+  p { max-width:66ch; margin:0 0 16px; }
+  p:last-child { margin-bottom:0; }
+  a { color:var(--accent-2); text-decoration-thickness:1px; text-underline-offset:2px; }
+
+  code {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.855em;
+    background:var(--panel-2);
+    border-radius:3px;
+    padding:.12em .34em;
+    color:var(--ink);
+  }
+
+  .code {
+    background:var(--code-ground);
+    border:1px solid var(--code-line);
+    border-radius:6px;
+    margin:0 0 18px;
+    overflow:hidden;
+  }
+  .code-head {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:7px 12px; border-bottom:1px solid var(--code-line);
+  }
+  .code-name {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--code-dim);
+  }
+  .copy {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--code-dim); background:transparent;
+    border:1px solid var(--code-line); border-radius:4px;
+    padding:3px 9px; cursor:pointer;
+    transition:color .14s, border-color .14s;
+  }
+  .copy:hover, .copy:focus-visible { color:var(--code-key); border-color:var(--code-key); }
+  .code pre {
+    margin:0; padding:14px 16px; overflow-x:auto;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.9px; line-height:1.72; color:var(--code-ink); tab-size:4;
+  }
+  .code pre b { color:var(--code-key); font-weight:500; }
+  .code pre i { color:var(--code-dim); font-style:normal; }
+  .code pre u { color:var(--code-str); text-decoration:none; }
+
+  ol.steps { list-style:none; counter-reset:s; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  ol.steps > li {
+    counter-increment:s; position:relative;
+    padding:12px 0 14px 46px; border-top:1px solid var(--line-soft);
+  }
+  ol.steps > li:last-child { border-bottom:1px solid var(--line-soft); }
+  ol.steps > li::before {
+    content:counter(s);
+    position:absolute; left:0; top:12px;
+    width:27px; height:27px;
+    display:grid; place-items:center; border-radius:50%;
+    background:var(--accent-wash); color:var(--accent);
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12px; font-weight:600;
+  }
+  ol.steps p { margin:0; }
+  ol.steps p + p { margin-top:5px; color:var(--ink-3); font-size:.92rem; }
+
+  .cards { display:grid; gap:10px; margin:0 0 18px; padding:0; list-style:none; }
+  @media (min-width:640px) { .cards { grid-template-columns:1fr 1fr; } }
+  @media (min-width:640px) { .cards.three { grid-template-columns:repeat(3,1fr); } }
+  .cards li {
+    background:var(--panel); border:1px solid var(--line-soft);
+    border-radius:6px; padding:14px 16px;
+  }
+  .cards .fname {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.5px; font-weight:600; color:var(--accent);
+    display:block; margin-bottom:5px;
+  }
+  .cards p { font-size:.91rem; color:var(--ink-2); margin:0; max-width:none; }
+  .cards .egs {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11.5px; color:var(--ink-3); display:block; margin-top:7px;
+  }
+
+  .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel); }
+  table { border-collapse:collapse; width:100%; min-width:580px; font-size:.9rem; }
+  caption {
+    text-align:left;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
+    padding:11px 16px; border-bottom:1px solid var(--line);
+  }
+  tbody tr + tr { border-top:1px solid var(--line-soft); }
+  td { padding:9px 16px; vertical-align:top; }
+  td:first-child {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.4px; white-space:nowrap; color:var(--ink);
+  }
+  td:last-child { color:var(--ink-2); }
+  .api-group td {
+    background:var(--panel-2);
+    font-family:Archivo, sans-serif; font-weight:600; font-size:.86rem;
+    color:var(--ink); white-space:normal;
+  }
+
+  figure { margin:0 0 18px; }
+  .diagram {
+    background:var(--panel); border:1px solid var(--line-soft);
+    border-radius:6px; padding:18px 16px 12px; overflow-x:auto;
+  }
+  .diagram svg { display:block; width:100%; min-width:560px; height:auto; }
+  .legend {
+    display:flex; flex-wrap:wrap; gap:6px 20px;
+    margin:14px 0 0; padding:0; list-style:none;
+    font-size:.82rem; color:var(--ink-3);
+  }
+  .legend li { display:flex; align-items:center; gap:7px; }
+  .swatch { width:11px; height:11px; border-radius:2px; flex:none; }
+  figcaption { font-size:.86rem; color:var(--ink-3); margin-top:11px; max-width:64ch; }
+
+  .warn {
+    background:var(--warn-wash); border:1px solid var(--warn-line);
+    border-radius:6px; padding:16px 18px; margin:0 0 12px;
+  }
+  .warn h3 { color:var(--warn); margin-bottom:6px; }
+  .warn p { color:var(--ink-2); font-size:.94rem; }
+  .warn code { background:rgba(143,83,19,.11); }
+
+  dl.outgrow { margin:0; display:flex; flex-direction:column; }
+  dl.outgrow div { padding:13px 0; border-top:1px solid var(--line-soft); }
+  dl.outgrow div:last-child { border-bottom:1px solid var(--line-soft); }
+  dt { font-family:Archivo, sans-serif; font-weight:600; font-size:.97rem; margin-bottom:3px; }
+  dd { margin:0; color:var(--ink-2); font-size:.93rem; max-width:64ch; }
+
+  footer {
+    grid-column:1/-1; margin-top:60px; padding-top:22px;
+    border-top:1px solid var(--line); font-size:.86rem; color:var(--ink-3);
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <p class="eyebrow">Unity · ScriptableObjects · C# basics</p>
+    <h1>Unity Adventure Kit</h1>
+    <p class="standfirst">Choose-your-own-adventure pages and one-off random events, in one system. <strong>A random event is just a page you arrived at by dice roll instead of by choice</strong> — same asset type, one thing to learn. Requirements and consequences are authored in the Inspector with dropdowns, so there's no code per event.</p>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#files">The files</a></li>
+      <li><a href="#setup">Setup</a></li>
+      <li><a href="#memory">The three memories</a></li>
+      <li><a href="#anatomy">Anatomy of a page</a></li>
+      <li><a href="#api">Everything you can call</a></li>
+      <li><a href="#ui">Recipe: the UI</a></li>
+      <li><a href="#random">Recipe: random events</a></li>
+      <li><a href="#sync">Your own Player class</a></li>
+      <li><a href="#tag">The escape hatch</a></li>
+      <li><a href="#saving">Saving</a></li>
+      <li><a href="#gotchas">Three gotchas</a></li>
+      <li><a href="#outgrow">Outgrowing it</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="files">
+      <h2>The files</h2>
+      <p class="section-note">Nine files sounds like a lot. Each is small and does exactly one thing, which beats three files of three hundred lines. The first four are what you author with; the next three run it.</p>
+      <ul class="cards">
+        <li><span class="fname">Requirement.cs</span><p>One condition. "Needs 10 gold", "must have the key", "must not have met the hermit".</p></li>
+        <li><span class="fname">Effect.cs</span><p>One consequence. "Gain 10 gold", "lose 5 hp", "remember this happened".</p></li>
+        <li><span class="fname">Choice.cs</span><p>One option. Edited inline inside its event — no asset per choice.</p></li>
+        <li><span class="fname">AdventureEvent.cs</span><p>One page: text plus options. Also exactly what a random event is.</p></li>
+        <li><span class="fname">AdventureState.cs</span><p>What the player has: flags, numbers, events already seen. Plus save data.</p></li>
+        <li><span class="fname">AdventureRunner.cs</span><p>Runs it: current page, which options are valid, picking one.</p></li>
+        <li><span class="fname">AdventureBook.cs</span><p>The asset your game points at. Knows every event, so it can load saves.</p></li>
+        <li><span class="fname">EventPool.cs</span><p>A bag of random events, with weights and conditions.</p></li>
+        <li><span class="fname">AdventureExample.cs</span><p>Zero-setup demo. Press Play, read the Console. Delete once it clicks.</p></li>
+      </ul>
+    </section>
+
+    <section id="setup">
+      <h2>Setup, about one minute</h2>
+      <p class="section-note">The demo builds its own adventure in code, so you can watch the system work before authoring a single asset. That's on purpose — see it move first, then learn the Inspector.</p>
+      <ol class="steps">
+        <li><p>Copy the nine <code>.cs</code> files into your project and let Unity compile.</p></li>
+        <li>
+          <p>Add the <strong>Adventure Example</strong> component to an empty GameObject. <strong>Leave both slots empty.</strong> Press Play.</p>
+          <p>You'll get a toll bridge with three options — one priced, one free, one greyed out with its reason — and the result of picking.</p>
+        </li>
+        <li>
+          <p>Now author your own: <strong>right-click → Create → Adventure → Event</strong>. Make two or three. Fill in the body text, then add <strong>Choices</strong> — each one gets its own text, and a <strong>Goes To</strong> slot pointing at the next event.</p>
+          <p>Leave <strong>Goes To</strong> empty for an option that ends the adventure.</p>
+        </li>
+        <li>
+          <p><strong>Create → Adventure → Book</strong>. Drag your first event into <strong>First Event</strong>, then right-click the Book asset and pick <strong>Collect Events</strong>.</p>
+          <p>The Console tells you how many events it found. If that number is lower than you expect, some events aren't reachable through any choice.</p>
+        </li>
+        <li><p>Drag the Book into the demo component's <strong>book</strong> slot and press Play again — it'll run your story instead of the built-in one.</p></li>
+      </ol>
+    </section>
+
+    <section id="memory">
+      <h2>The three memories</h2>
+      <p class="section-note">Everything the adventure remembers is one of these. Deliberately no more.</p>
+      <ul class="cards three">
+        <li>
+          <span class="fname">Flags</span>
+          <p>On/off facts. Either the player has it or they don't.</p>
+          <span class="egs">has_rusty_key<br>spared_the_wolf</span>
+        </li>
+        <li>
+          <span class="fname">Stats</span>
+          <p>Named numbers. Anything you never set is simply 0, so there's nothing to declare.</p>
+          <span class="egs">gold = 40<br>hp = 12</span>
+        </li>
+        <li>
+          <span class="fname">Seen</span>
+          <p>Which events have already happened. This is what makes "only once" random events work.</p>
+          <span class="egs">handled for you</span>
+        </li>
+      </ul>
+      <p>All three live in <code>AdventureState</code>, which is a plain class — not a ScriptableObject. Same reason as ever: if you put progress on an asset, Unity writes it into the file while you playtest and every save slot shares it.</p>
+      <p>Pick a spelling for each key and stick to it. <code>gold</code> and <code>Gold</code> are two different numbers, and nothing will warn you.</p>
+    </section>
+
+    <section id="anatomy">
+      <h2>Anatomy of a page</h2>
+      <p class="section-note">One event, three options, three different fates. This is the picture worth having in your head.</p>
+      <figure>
+        <div class="diagram">
+          <svg viewBox="0 0 640 300" role="img" aria-label="An event card titled The Toll Bridge with three options: an affordable priced option and a free option both leading to next pages, and a locked option showing its requirement.">
+            <defs>
+              <marker id="av" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--ink-3)"></path>
+              </marker>
+            </defs>
+
+            <rect x="8" y="14" width="296" height="272" rx="7" fill="var(--ground)" stroke="var(--line)"></rect>
+
+            <g font-family="'IBM Plex Sans', sans-serif">
+              <text x="28" y="46" font-size="14.5" font-weight="600" fill="var(--ink)">The Toll Bridge</text>
+              <text x="28" y="70" font-size="11.5" fill="var(--ink-3)">A troll squats on the bridge, picking its</text>
+              <text x="28" y="86" font-size="11.5" fill="var(--ink-3)">teeth. &#8220;Ten gold,&#8221; it grunts.</text>
+
+              <g>
+                <rect x="28" y="104" width="252" height="36" rx="5" fill="var(--accent-wash)" stroke="var(--accent)" stroke-width="1.5"></rect>
+                <text x="42" y="121" font-size="12" font-weight="500" fill="var(--accent-2)">Pay the toll</text>
+                <text x="42" y="134" font-size="10" fill="var(--accent)" font-family="'IBM Plex Mono', monospace">gold -10</text>
+              </g>
+
+              <g>
+                <rect x="28" y="150" width="252" height="36" rx="5" fill="var(--accent-wash)" stroke="var(--accent)" stroke-width="1.5"></rect>
+                <text x="42" y="167" font-size="12" font-weight="500" fill="var(--accent-2)">Take the long way round</text>
+                <text x="42" y="180" font-size="10" fill="var(--accent)" font-family="'IBM Plex Mono', monospace">gain muddy_boots</text>
+              </g>
+
+              <g>
+                <rect x="28" y="196" width="252" height="36" rx="5" fill="var(--panel-2)" stroke="var(--line)" stroke-dasharray="4 3"></rect>
+                <text x="42" y="213" font-size="12" fill="var(--ink-3)">Show the troll your royal seal</text>
+                <text x="42" y="226" font-size="10" fill="var(--ink-3)" font-family="'IBM Plex Mono', monospace">Needs royal_seal</text>
+              </g>
+
+              <text x="28" y="266" font-size="10.5" fill="var(--ink-3)" font-family="'IBM Plex Mono', monospace">gold: 12</text>
+            </g>
+
+            <g stroke="var(--ink-3)" stroke-width="1.4" fill="none" marker-end="url(#av)">
+              <path d="M 284 122 L 396 118"></path>
+              <path d="M 284 168 L 396 210"></path>
+            </g>
+
+            <g font-family="'IBM Plex Sans', sans-serif" font-size="12" font-weight="500">
+              <g>
+                <rect x="400" y="98" width="222" height="40" rx="5" fill="var(--panel-2)" stroke="var(--line)"></rect>
+                <text x="416" y="123" fill="var(--ink-2)">Across</text>
+              </g>
+              <g>
+                <rect x="400" y="190" width="222" height="40" rx="5" fill="var(--panel-2)" stroke="var(--line)"></rect>
+                <text x="416" y="215" fill="var(--ink-2)">The Long Way</text>
+              </g>
+              <text x="400" y="163" font-size="10.5" fill="var(--ink-3)" font-family="'IBM Plex Mono', monospace">both are endings &#8212; no choices of their own</text>
+            </g>
+          </svg>
+          <ul class="legend">
+            <li><span class="swatch" style="background:var(--accent-wash);border:1.5px solid var(--accent)"></span> <code>IsAvailable</code> true — a real button</li>
+            <li><span class="swatch" style="background:var(--panel-2);border:1.5px dashed var(--line)"></span> requirements not met — greyed out, with the reason</li>
+          </ul>
+        </div>
+        <figcaption>The locked option still appears, because teasing the player with what they <em>could</em> have done is good design. Tick <strong>Hide When Unavailable</strong> on the choice if you'd rather it vanish.</figcaption>
+      </figure>
+      <p>An event with an empty choices list is an ending — that's all "ending" means. So is an option whose <strong>Goes To</strong> is empty.</p>
+      <p>Events also have <strong>Effects On Arrival</strong>, which fire the moment the page appears, before the player picks anything. That's how a random event says "you stumble across 10 gold".</p>
+    </section>
+
+    <section id="api">
+      <h2>Everything you can call</h2>
+      <p class="section-note">The complete surface. If it isn't here, it doesn't exist.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Reference</caption>
+          <tbody>
+            <tr class="api-group"><td colspan="2">AdventureRunner — what your UI talks to</td></tr>
+            <tr><td>state</td><td>The player's flags and numbers. Read and poke at it freely.</td></tr>
+            <tr><td>Go(event)</td><td>Show an event. Applies arrival effects, marks it seen.</td></tr>
+            <tr><td>GetCurrentEvent()</td><td>The page to draw. Null once the adventure is over.</td></tr>
+            <tr><td>IsFinished()</td><td>Has the story run out? Close your window when true.</td></tr>
+            <tr><td>GetVisibleChoices()</td><td>Options to put on screen, including locked ones you should grey out.</td></tr>
+            <tr><td>GetAvailableChoices()</td><td>Only the ones the player may actually click.</td></tr>
+            <tr><td>Choose(choice)</td><td>Picks it. Returns false and changes nothing if not allowed.</td></tr>
+            <tr><td>ChooseVisible(index)</td><td>Same, by position — handy for keyboard input.</td></tr>
+            <tr><td>lastCustomTag</td><td>The tag from the choice just picked. See the escape hatch below.</td></tr>
+            <tr><td>Save()</td><td>Save data including which page you're on.</td></tr>
+            <tr><td>ResumeAt(event)</td><td>Jump to a page <em>without</em> arrival effects. For loading only.</td></tr>
+
+            <tr class="api-group"><td colspan="2">Choice — one option</td></tr>
+            <tr><td>text</td><td>The button label.</td></tr>
+            <tr><td>IsAvailable(state)</td><td>Can it be picked right now? Use it to decide how to draw it.</td></tr>
+            <tr><td>DescribeRequirements()</td><td>"Needs gold 10 or more" — the greyed-out explanation.</td></tr>
+            <tr><td>DescribeCost()</td><td>"gold -10" — show the price on the button.</td></tr>
+            <tr><td>goesTo</td><td>Next event, or empty to end the adventure.</td></tr>
+            <tr><td>customTag</td><td>Free text your own code can switch on.</td></tr>
+
+            <tr class="api-group"><td colspan="2">AdventureState — the player's memory</td></tr>
+            <tr><td>HasFlag(key)</td><td>Is this fact true?</td></tr>
+            <tr><td>SetFlag / ClearFlag</td><td>Turn a fact on or off.</td></tr>
+            <tr><td>GetStat(key)</td><td>A named number. Anything unset is 0.</td></tr>
+            <tr><td>SetStat / AddToStat</td><td>Set it, or add to it (negative to subtract).</td></tr>
+            <tr><td>HasSeen(event)</td><td>Has this event already happened?</td></tr>
+            <tr><td>Save() / Load(save)</td><td>To and from a plain serialisable object.</td></tr>
+
+            <tr class="api-group"><td colspan="2">AdventureBook — the asset your game points at</td></tr>
+            <tr><td>StartNewAdventure()</td><td>A runner sitting on First Event.</td></tr>
+            <tr><td>Resume(save)</td><td>A runner back where the player left off.</td></tr>
+            <tr><td>FindEventById(id)</td><td>Turns a saved ID back into an event.</td></tr>
+            <tr><td>CollectEvents()</td><td>Right-click menu. Re-run after adding or duplicating events.</td></tr>
+
+            <tr class="api-group"><td colspan="2">EventPool — random events</td></tr>
+            <tr><td>Draw(state)</td><td>A random eligible event, or null if none are possible.</td></tr>
+            <tr><td>CountPossible(state)</td><td>How many could fire right now, without drawing one.</td></tr>
+            <tr><td>GetAllEvents()</td><td>Every event in the pool — drag these into your Book's Also Include.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="ui">
+      <h2>Recipe: the UI</h2>
+      <p class="section-note">The only part you have to write yourself, and it's short. The kit does the rules; this does the drawing.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">AdventureUI.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>public</b> AdventureBook book;
+<b>public</b> Text titleLabel;
+<b>public</b> Text bodyLabel;
+<b>public</b> Button[] optionButtons;   <i>// four is usually plenty</i>
+
+<b>private</b> AdventureRunner runner;
+
+<b>void</b> Start()
+{
+    runner = book.StartNewAdventure();
+    Redraw();
+}
+
+<b>void</b> Redraw()
+{
+    <b>if</b> (runner.IsFinished())
+    {
+        gameObject.SetActive(<b>false</b>); <i>// story over, close the window</i>
+        <b>return</b>;
+    }
+
+    AdventureEvent page = runner.GetCurrentEvent();
+
+    titleLabel.text = page.GetTitle();
+    bodyLabel.text  = page.bodyText;
+
+    List&lt;Choice&gt; options = runner.GetVisibleChoices();
+
+    <b>for</b> (<b>int</b> i = 0; i &lt; optionButtons.Length; i++)
+    {
+        <i>// Hide any spare buttons.</i>
+        <b>if</b> (i &gt;= options.Count)
+        {
+            optionButtons[i].gameObject.SetActive(<b>false</b>);
+            <b>continue</b>;
+        }
+
+        Choice option = options[i];
+        <b>bool</b> allowed = option.IsAvailable(runner.state);
+
+        optionButtons[i].gameObject.SetActive(<b>true</b>);
+
+        <i>// A locked option is shown but not clickable.</i>
+        optionButtons[i].interactable = allowed;
+
+        <b>string</b> label = option.text;
+
+        <b>if</b> (allowed)
+        {
+            <b>string</b> cost = option.DescribeCost();
+            <b>if</b> (cost != <u>""</u>) label += <u>"  ("</u> + cost + <u>")"</u>;
+        }
+        <b>else</b>
+        {
+            label += <u>"  - "</u> + option.DescribeRequirements();
+        }
+
+        optionButtons[i].GetComponentInChildren&lt;Text&gt;().text = label;
+
+        <i>// Careful: clear old listeners or they stack up every Redraw.</i>
+        Choice captured = option;
+        optionButtons[i].onClick.RemoveAllListeners();
+        optionButtons[i].onClick.AddListener(() =&gt; OnOptionClicked(captured));
+    }
+}
+
+<b>void</b> OnOptionClicked(Choice option)
+{
+    runner.Choose(option);
+    Redraw();
+}</pre>
+      </div>
+      <p>The one real trap in there is the last bit: <code>RemoveAllListeners()</code> before <code>AddListener</code>. Skip it and every redraw adds another handler, so by page five one click fires five times.</p>
+    </section>
+
+    <section id="random">
+      <h2>Recipe: random events</h2>
+      <p class="section-note">Same events, same runner. The pool just decides which page you land on.</p>
+      <p>Create <strong>Adventure → Event Pool</strong>, then add entries. Each entry gets a <strong>weight</strong> (3 is three times as likely as 1), optional <strong>requirements</strong>, and an <strong>only once</strong> tick for one-off story beats hidden among the repeatable filler.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Firing one after a battle</span><button class="copy" type="button">Copy</button></div>
+<pre><b>public</b> EventPool wildernessEvents;
+
+<b>public void</b> OnBattleWon()
+{
+    <i>// 30% chance of something happening at all.</i>
+    <b>if</b> (UnityEngine.Random.value &gt; 0.3f) <b>return</b>;
+
+    AdventureEvent evt = wildernessEvents.Draw(runner.state);
+
+    <i>// Always check for null. It is completely normal - it just means
+    // nothing in the pool is eligible right now, usually because the
+    // one-off events are all used up.</i>
+    <b>if</b> (evt == <b>null</b>) <b>return</b>;
+
+    runner.Go(evt);
+    adventureWindow.SetActive(<b>true</b>);
+    Redraw();
+}</pre>
+      </div>
+      <p>A random event with no choices is a pure notification — "you find 10 gold" as an <strong>Effect On Arrival</strong> and nothing to pick. Give it a single "Continue" option with an empty <strong>Goes To</strong> if you want the player to have to acknowledge it.</p>
+    </section>
+
+    <section id="sync">
+      <h2>Your own Player class</h2>
+      <p class="section-note">The kit owns its own numbers. Here's the two-line way to live with that.</p>
+      <p>You do <em>not</em> need an adapter or an interface. If your game already tracks gold and hp, copy them in before showing the event and read them back after:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Wherever you open the event window</span><button class="copy" type="button">Copy</button></div>
+<pre><i>// Before</i>
+runner.state.SetStat(<u>"gold"</u>, player.gold);
+runner.state.SetStat(<u>"hp"</u>,   player.hp);
+
+<i>// ...player reads the page and picks an option...</i>
+
+<i>// After</i>
+player.gold = runner.state.GetStat(<u>"gold"</u>);
+player.hp   = runner.state.GetStat(<u>"hp"</u>);</pre>
+      </div>
+      <p>Flags are usually best left living in <code>AdventureState</code> permanently — they're story memory, not player stats, and your game rarely needs them elsewhere.</p>
+    </section>
+
+    <section id="tag">
+      <h2>The escape hatch</h2>
+      <p class="section-note">For the handful of things flags and numbers can't express.</p>
+      <p>Put anything you like in a choice's <strong>Custom Tag</strong>, then read it straight after <code>Choose</code>:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">In OnOptionClicked</span><button class="copy" type="button">Copy</button></div>
+<pre>runner.Choose(option);
+
+<b>switch</b> (runner.lastCustomTag)
+{
+    <b>case</b> <u>"SPAWN_BOSS"</u>:    spawner.SpawnBoss();       <b>break</b>;
+    <b>case</b> <u>"PLAY_CUTSCENE"</u>: cutscene.Play();           <b>break</b>;
+    <b>case</b> <u>"OPEN_SHOP"</u>:     shopWindow.SetActive(<b>true</b>); <b>break</b>;
+}
+
+Redraw();</pre>
+      </div>
+      <p>Resist the urge to route everything through here. A tag is invisible to the Inspector's dropdowns and can't be reasoned about — if something is really "spend 10 gold", make it an Effect so it shows up in <code>DescribeCost()</code> on the button.</p>
+    </section>
+
+    <section id="saving">
+      <h2>Saving</h2>
+      <p class="section-note"><code>runner.Save()</code> gives you a plain object built for <code>JsonUtility</code>.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">PlayerPrefs, fine for prototyping</span><button class="copy" type="button">Copy</button></div>
+<pre><b>void</b> SaveGame()
+{
+    AdventureSave data = runner.Save();
+    PlayerPrefs.SetString(<u>"adventure"</u>, JsonUtility.ToJson(data));
+    PlayerPrefs.Save();
+}
+
+<b>void</b> LoadGame()
+{
+    <b>string</b> json = PlayerPrefs.GetString(<u>"adventure"</u>, <u>""</u>);
+    <b>if</b> (json == <u>""</u>) { runner = book.StartNewAdventure(); <b>return</b>; }
+
+    AdventureSave data = JsonUtility.FromJson&lt;AdventureSave&gt;(json);
+    runner = book.Resume(data);
+
+    Redraw();
+}</pre>
+      </div>
+      <p>Events carry a permanent hidden ID, same as the node graph kit, so renaming and moving your event assets is safe — the save stores the ID, not the name.</p>
+      <p>Two details you'd have had to discover the hard way, both handled: the stats dictionary is stored as two parallel lists, because <code>JsonUtility</code> flatly refuses to serialise a <code>Dictionary</code>; and <code>Resume</code> uses <code>ResumeAt</code> rather than <code>Go</code>, so a page's arrival effects aren't handed out again every time the player reloads.</p>
+    </section>
+
+    <section id="gotchas">
+      <h2>Three gotchas</h2>
+      <p class="section-note">The first one is a design mistake; the other two are Unity being Unity.</p>
+      <div class="warn">
+        <h3>Always leave one option with no requirements</h3>
+        <p>If every option on a page is locked, the player is stuck staring at greyed-out buttons with no way out and no way back. Every page needs at least one unconditional escape — even if it's just "turn back". The demo script logs a warning when it hits this, so you'll catch it while testing.</p>
+      </div>
+      <div class="warn">
+        <h3>Ctrl+D copies an event's hidden ID</h3>
+        <p>Duplicating an event asset copies its ID too, so two events look identical to your save file. <strong>Collect Events</strong> on your Book detects this and names both assets; the fix is right-click the copy → <strong>Assign New Id</strong>. So after a round of duplicating, re-run Collect Events and check the Console.</p>
+      </div>
+      <div class="warn">
+        <h3>Pool-only events need adding to the Book by hand</h3>
+        <p><strong>Collect Events</strong> walks your story from <strong>First Event</strong> through the choices — so it cannot see events that only exist inside an <code>EventPool</code>. Drag those into the Book's <strong>Also Include</strong> list or loading a save won't be able to find them. <code>pool.GetAllEvents()</code> hands you the list.</p>
+      </div>
+    </section>
+
+    <section id="outgrow">
+      <h2>Outgrowing it</h2>
+      <p class="section-note">What this deliberately doesn't do, and when you'd notice.</p>
+      <dl class="outgrow">
+        <div>
+          <dt>Requirements with "or"</dt>
+          <dd>All requirements on a choice must be met — it's always AND. For "gold OR a favour owed", make two separate choices with the same text and destination. Slightly redundant, far easier to read in the Inspector than a condition tree.</dd>
+        </div>
+        <div>
+          <dt>Non-integer numbers, and clamping</dt>
+          <dd>Stats are whole numbers and can go negative. If <code>hp</code> shouldn't drop below zero, clamp it in your own code — the kit doesn't guess at your rules.</dd>
+        </div>
+        <div>
+          <dt>Randomness inside an outcome</dt>
+          <dd>A choice always does exactly what its effects say. "Pick the lock: 60% success" needs either two events and a coin flip in your own code, or a custom tag.</dd>
+        </div>
+        <div>
+          <dt>Writing prose in the Inspector</dt>
+          <dd>Fine for dozens of events, tiring for hundreds. At that scale writers usually want Ink or Yarn Spinner — real scripting languages for branching narrative, with proper text editors.</dd>
+        </div>
+        <div>
+          <dt>Sharing nodes with the graph kit</dt>
+          <dd>This is a separate system on purpose. The graph kit's connections carry no data, and here the <em>choices</em> are where all the data lives — that's exactly the split that made two kits the right answer instead of one.</dd>
+        </div>
+      </dl>
+    </section>
+
+  </main>
+
+  <footer>
+    Nine scripts. Checked with 102 automated tests covering every requirement and effect kind, boundary values, null and empty Inspector slots, save/load round-trips including truncated files, choice validation, endings, story walking with loops, duplicate-ID detection, resume not re-applying arrival effects, and weighted random draws with measured distribution. Compiles clean in both editor and player builds.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll(".copy").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var block = button.closest(".code");
+      var pre = block ? block.querySelector("pre") : null;
+      if (!pre) return;
+
+      var done = function (label) {
+        button.textContent = label;
+        setTimeout(function () { button.textContent = "Copy"; }, 1600);
+      };
+
+      try {
+        navigator.clipboard.writeText(pre.innerText).then(
+          function () { done("Copied"); },
+          function () { done("Select it"); }
+        );
+      } catch (e) {
+        done("Select it");
+      }
+    });
+  });
+</script>
+</body>
+</html>

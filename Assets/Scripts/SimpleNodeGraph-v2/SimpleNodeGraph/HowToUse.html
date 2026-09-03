@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin:0; }
+  img { max-width:100%; }
+  [hidden] { display:none !important; }
+</style>
+<title>Unity Node Graph Kit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground:#FBFCFD;
+    --panel:#F1F4F6;
+    --panel-2:#E8ECF0;
+    --line:#D2DAE1;
+    --line-soft:#E4E9ED;
+    --ink:#121A20;
+    --ink-2:#3D4B57;
+    --ink-3:#6B7885;
+    --accent:#0C7D7B;
+    --accent-2:#065E5C;
+    --accent-wash:#E0F0EF;
+    --warn:#8F5313;
+    --warn-line:#D8A96C;
+    --warn-wash:#FAF1E4;
+    --code-ground:#111A21;
+    --code-ink:#D8E2E9;
+    --code-line:#25333D;
+    --code-dim:#7E909E;
+    --code-key:#6FC5C1;
+    --code-str:#C8B478;
+    --shadow:0 1px 2px rgba(18,26,32,.05), 0 8px 24px -16px rgba(18,26,32,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:#0D1216;
+      --panel:#151C22;
+      --panel-2:#1C252C;
+      --line:#293439;
+      --line-soft:#1F292F;
+      --ink:#E8EDF1;
+      --ink-2:#AFBCC6;
+      --ink-3:#7B8894;
+      --accent:#3EC2BC;
+      --accent-2:#83DBD6;
+      --accent-wash:#112A2B;
+      --warn:#DCA463;
+      --warn-line:#5C4527;
+      --warn-wash:#241C12;
+      --code-ground:#080D11;
+      --code-line:#1E2A32;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#0D1216;
+    --panel:#151C22;
+    --panel-2:#1C252C;
+    --line:#293439;
+    --line-soft:#1F292F;
+    --ink:#E8EDF1;
+    --ink-2:#AFBCC6;
+    --ink-3:#7B8894;
+    --accent:#3EC2BC;
+    --accent-2:#83DBD6;
+    --accent-wash:#112A2B;
+    --warn:#DCA463;
+    --warn-line:#5C4527;
+    --warn-wash:#241C12;
+    --code-ground:#080D11;
+    --code-line:#1E2A32;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing:border-box; }
+
+  body {
+    background:var(--ground);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .shell {
+    display:grid;
+    grid-template-columns:1fr;
+    gap:0;
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 24px 96px;
+  }
+  @media (min-width:1040px) {
+    .shell { grid-template-columns:200px minmax(0,1fr); gap:56px; padding-right:40px; }
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    grid-column:1/-1;
+    padding:52px 0 30px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:44px;
+  }
+  .eyebrow {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11.5px;
+    font-weight:500;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 14px;
+  }
+  h1 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:700;
+    font-size:clamp(2rem, 5vw, 2.85rem);
+    line-height:1.06;
+    letter-spacing:-.026em;
+    margin:0 0 16px;
+    text-wrap:balance;
+  }
+  .standfirst {
+    font-size:1.075rem;
+    color:var(--ink-2);
+    max-width:60ch;
+    margin:0;
+  }
+  .standfirst strong { color:var(--ink); font-weight:600; }
+
+  /* ---------- toc ---------- */
+  nav.toc { display:none; }
+  @media (min-width:1040px) {
+    nav.toc {
+      display:block;
+      position:sticky;
+      top:32px;
+      align-self:start;
+      padding-top:4px;
+    }
+  }
+  nav.toc ol {
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  nav.toc a {
+    display:block;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.5px;
+    color:var(--ink-3);
+    text-decoration:none;
+    padding:5px 0 5px 12px;
+    border-left:2px solid var(--line-soft);
+    transition:color .14s, border-color .14s;
+  }
+  nav.toc a:hover, nav.toc a:focus-visible {
+    color:var(--accent);
+    border-left-color:var(--accent);
+  }
+
+  /* ---------- sections ---------- */
+  main { min-width:0; display:flex; flex-direction:column; gap:52px; }
+  section { scroll-margin-top:24px; min-width:0; }
+
+  h2 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:600;
+    font-size:1.45rem;
+    letter-spacing:-.016em;
+    margin:0 0 6px;
+    text-wrap:balance;
+  }
+  h3 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:600;
+    font-size:1.03rem;
+    letter-spacing:-.008em;
+    margin:0 0 8px;
+  }
+  .section-note {
+    color:var(--ink-3);
+    font-size:.925rem;
+    margin:0 0 22px;
+    max-width:64ch;
+  }
+  p { max-width:66ch; margin:0 0 16px; }
+  p:last-child { margin-bottom:0; }
+  a { color:var(--accent-2); text-decoration-thickness:1px; text-underline-offset:2px; }
+
+  code {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.855em;
+    background:var(--panel-2);
+    border-radius:3px;
+    padding:.12em .34em;
+    color:var(--ink);
+  }
+
+  /* ---------- code blocks ---------- */
+  .code {
+    position:relative;
+    background:var(--code-ground);
+    border:1px solid var(--code-line);
+    border-radius:6px;
+    margin:0 0 18px;
+    overflow:hidden;
+  }
+  .code-head {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:7px 12px;
+    border-bottom:1px solid var(--code-line);
+  }
+  .code-name {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--code-dim);
+  }
+  .copy {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--code-dim);
+    background:transparent;
+    border:1px solid var(--code-line);
+    border-radius:4px;
+    padding:3px 9px;
+    cursor:pointer;
+    transition:color .14s, border-color .14s;
+  }
+  .copy:hover, .copy:focus-visible { color:var(--code-key); border-color:var(--code-key); }
+  .code pre {
+    margin:0;
+    padding:14px 16px;
+    overflow-x:auto;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.9px;
+    line-height:1.72;
+    color:var(--code-ink);
+    tab-size:4;
+  }
+  .code pre b { color:var(--code-key); font-weight:500; }
+  .code pre i { color:var(--code-dim); font-style:normal; }
+  .code pre u { color:var(--code-str); text-decoration:none; }
+
+  /* ---------- steps ---------- */
+  ol.steps { list-style:none; counter-reset:s; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  ol.steps > li {
+    counter-increment:s;
+    position:relative;
+    padding:12px 0 14px 46px;
+    border-top:1px solid var(--line-soft);
+  }
+  ol.steps > li:last-child { border-bottom:1px solid var(--line-soft); }
+  ol.steps > li::before {
+    content:counter(s);
+    position:absolute;
+    left:0; top:12px;
+    width:27px; height:27px;
+    display:grid; place-items:center;
+    border-radius:50%;
+    background:var(--accent-wash);
+    color:var(--accent);
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12px;
+    font-weight:600;
+  }
+  ol.steps p { margin:0; }
+  ol.steps p + p { margin-top:5px; color:var(--ink-3); font-size:.92rem; }
+
+  /* ---------- file cards ---------- */
+  .files { display:grid; gap:10px; margin:0; padding:0; list-style:none; }
+  @media (min-width:640px) { .files { grid-template-columns:1fr 1fr; } }
+  .files li {
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:6px;
+    padding:14px 16px;
+  }
+  .files .fname {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--accent);
+    display:block;
+    margin-bottom:5px;
+  }
+  .files p { font-size:.91rem; color:var(--ink-2); margin:0; max-width:none; }
+
+  /* ---------- api table ---------- */
+  .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel); }
+  table { border-collapse:collapse; width:100%; min-width:560px; font-size:.9rem; }
+  caption {
+    text-align:left;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-3);
+    padding:11px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  tbody tr + tr { border-top:1px solid var(--line-soft); }
+  td { padding:9px 16px; vertical-align:top; }
+  td:first-child {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.4px;
+    white-space:nowrap;
+    color:var(--ink);
+  }
+  td:last-child { color:var(--ink-2); }
+  .api-group td {
+    background:var(--panel-2);
+    font-family:Archivo, sans-serif;
+    font-weight:600;
+    font-size:.86rem;
+    letter-spacing:.01em;
+    color:var(--ink);
+    white-space:normal;
+  }
+
+  /* ---------- diagram ---------- */
+  figure { margin:0 0 18px; }
+  .diagram {
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:6px;
+    padding:18px 16px 12px;
+    overflow-x:auto;
+  }
+  .diagram svg { display:block; width:100%; min-width:520px; height:auto; }
+  .legend {
+    display:flex; flex-wrap:wrap; gap:6px 20px;
+    margin:14px 0 0;
+    padding:0; list-style:none;
+    font-size:.82rem; color:var(--ink-3);
+  }
+  .legend li { display:flex; align-items:center; gap:7px; }
+  .swatch { width:11px; height:11px; border-radius:2px; flex:none; }
+  figcaption { font-size:.86rem; color:var(--ink-3); margin-top:11px; max-width:64ch; }
+
+  /* ---------- callouts ---------- */
+  .warn {
+    background:var(--warn-wash);
+    border:1px solid var(--warn-line);
+    border-radius:6px;
+    padding:16px 18px;
+    margin:0 0 12px;
+  }
+  .warn h3 { color:var(--warn); margin-bottom:6px; }
+  .warn p { color:var(--ink-2); font-size:.94rem; }
+  .warn code { background:rgba(143,83,19,.11); }
+
+  /* ---------- outgrow ---------- */
+  dl.outgrow { margin:0; display:flex; flex-direction:column; gap:0; }
+  dl.outgrow div { padding:13px 0; border-top:1px solid var(--line-soft); }
+  dl.outgrow div:last-child { border-bottom:1px solid var(--line-soft); }
+  dt { font-family:Archivo, sans-serif; font-weight:600; font-size:.97rem; margin-bottom:3px; }
+  dd { margin:0; color:var(--ink-2); font-size:.93rem; max-width:64ch; }
+
+  footer {
+    grid-column:1/-1;
+    margin-top:60px;
+    padding-top:22px;
+    border-top:1px solid var(--line);
+    font-size:.86rem;
+    color:var(--ink-3);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition:none !important; animation:none !important; }
+  }
+</style>
+
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <p class="eyebrow">Unity · ScriptableObjects · C# basics</p>
+    <h1>Unity Node Graph Kit</h1>
+    <p class="standfirst">Four small scripts that turn a pile of assets into a connected graph — a skill tree, a world map, a dialogue tree. The whole idea: <strong>a node is an asset with a list of the nodes it connects to.</strong> That list <em>is</em> the graph. There is no clever graph class anywhere.</p>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#files">The files</a></li>
+      <li><a href="#setup">Setup</a></li>
+      <li><a href="#idea">How it thinks</a></li>
+      <li><a href="#api">Everything you can call</a></li>
+      <li><a href="#skilltree">Recipe: skill tree</a></li>
+      <li><a href="#map">Recipe: world map</a></li>
+      <li><a href="#dialogue">Recipe: dialogue</a></li>
+      <li><a href="#saving">Saving</a></li>
+      <li><a href="#gotchas">Two gotchas</a></li>
+      <li><a href="#outgrow">Outgrowing it</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="files">
+      <h2>The files</h2>
+      <p class="section-note">Drop all four anywhere under <code>Assets</code>. No folder structure required, no namespaces to import.</p>
+      <ul class="files">
+        <li>
+          <span class="fname">GraphNode.cs</span>
+          <p>One node. A title, a list of neighbours, a hidden ID. Inherit from it to add your own data.</p>
+        </li>
+        <li>
+          <span class="fname">GraphState.cs</span>
+          <p>The player's progress: which nodes are unlocked. A plain <code>List</code> plus small helpers.</p>
+        </li>
+        <li>
+          <span class="fname">NodeGraph.cs</span>
+          <p>One asset per tree. Holds every node, starts new games, finds routes.</p>
+        </li>
+        <li>
+          <span class="fname">GraphExample.cs</span>
+          <p>A throwaway test script that prints to the Console. Delete it once things click.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="setup">
+      <h2>Setup, about five minutes</h2>
+      <p class="section-note">Do this once with three throwaway nodes before you build anything real. Seeing the Console output is what makes the rest obvious.</p>
+      <ol class="steps">
+        <li>
+          <p>Put the four <code>.cs</code> files in your project and let Unity finish compiling.</p>
+        </li>
+        <li>
+          <p>In the Project window: <strong>right-click → Create → Graph → Node</strong>. Make three, named <code>Root</code>, <code>Strength</code>, <code>HeavyArmor</code>.</p>
+        </li>
+        <li>
+          <p>Select <code>Root</code>. In the Inspector, drag <code>Strength</code> into its <strong>Connected To</strong> list. Then select <code>Strength</code> and drag <code>HeavyArmor</code> into its list.</p>
+          <p>Connections are one-way. <code>Root → Strength</code> does not mean <code>Strength → Root</code>.</p>
+        </li>
+        <li>
+          <p><strong>Right-click → Create → Graph → Node Graph</strong>. Drag <code>Root</code> into its <strong>Starting Nodes</strong>, then right-click the asset itself and pick <strong>Collect Nodes</strong>.</p>
+          <p>The Console should say <em>found 3 nodes</em>. If it says 1, your connections aren't wired up. Re-run this whenever you add nodes — it also checks for the duplicate-ID problem below.</p>
+        </li>
+        <li>
+          <p>Make an empty GameObject, add the <strong>Graph Example</strong> component, drag your Node Graph asset into its slot, and press Play.</p>
+          <p>You'll see <code>Root</code> unlocked, <code>Strength</code> available, <code>HeavyArmor</code> not — then <code>Strength</code> gets unlocked and <code>HeavyArmor</code> becomes available.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="idea">
+      <h2>How it thinks</h2>
+      <p class="section-note">Two objects, and keeping them apart is the entire design.</p>
+      <p>The <strong>graph</strong> is your assets. It never changes while the game runs — it's the map. The <strong>state</strong> is a list of unlocked nodes that lives in memory and goes into your save file — it's the progress.</p>
+      <p>Everything else follows from one question: <em>is this node touching something I already own?</em> That's <code>CanUnlock</code>, and it's literally a loop over your unlocked list asking each node "is this one in your <code>connectedTo</code>?"</p>
+
+      <figure>
+        <div class="diagram">
+          <svg viewBox="0 0 625 246" role="img" aria-label="A skill tree with Root and Strength unlocked, Agility and HeavyArmor available, Dodge and Evasion still locked.">
+            <defs>
+              <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--ink-3)"></path>
+              </marker>
+            </defs>
+            <g stroke="var(--ink-3)" stroke-width="1.4" fill="none" marker-end="url(#ar)">
+              <path d="M 124 112 L 162 78"></path>
+              <path d="M 124 134 L 162 168"></path>
+              <path d="M 274 62 L 342 62"></path>
+              <path d="M 274 184 L 342 184"></path>
+              <path d="M 454 184 L 497 184"></path>
+            </g>
+            <g font-family="'IBM Plex Sans', sans-serif" font-size="13" font-weight="500" text-anchor="middle">
+              <g>
+                <rect x="16" y="103" width="108" height="40" rx="5" fill="var(--accent)" stroke="var(--accent)"></rect>
+                <text x="70" y="128" fill="var(--ground)">Root</text>
+              </g>
+              <g>
+                <rect x="166" y="42" width="108" height="40" rx="5" fill="var(--accent)" stroke="var(--accent)"></rect>
+                <text x="220" y="67" fill="var(--ground)">Strength</text>
+              </g>
+              <g>
+                <rect x="166" y="164" width="108" height="40" rx="5" fill="var(--accent-wash)" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3"></rect>
+                <text x="220" y="189" fill="var(--accent-2)">Agility</text>
+              </g>
+              <g>
+                <rect x="346" y="42" width="108" height="40" rx="5" fill="var(--accent-wash)" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3"></rect>
+                <text x="400" y="67" fill="var(--accent-2)">HeavyArmor</text>
+              </g>
+              <g>
+                <rect x="346" y="164" width="108" height="40" rx="5" fill="var(--panel-2)" stroke="var(--line)"></rect>
+                <text x="400" y="189" fill="var(--ink-3)">Dodge</text>
+              </g>
+              <g>
+                <rect x="501" y="164" width="108" height="40" rx="5" fill="var(--panel-2)" stroke="var(--line)"></rect>
+                <text x="555" y="189" fill="var(--ink-3)">Evasion</text>
+              </g>
+            </g>
+          </svg>
+          <ul class="legend">
+            <li><span class="swatch" style="background:var(--accent)"></span> in <code>unlockedNodes</code></li>
+            <li><span class="swatch" style="background:var(--accent-wash);border:1.5px dashed var(--accent)"></span> <code>CanUnlock</code> returns true</li>
+            <li><span class="swatch" style="background:var(--panel-2);border:1px solid var(--line)"></span> too far away, for now</li>
+          </ul>
+        </div>
+        <figcaption>Unlock <code>Agility</code> and <code>Dodge</code> immediately becomes available — you don't update anything, because availability is calculated from the unlocked list every time you ask.</figcaption>
+      </figure>
+    </section>
+
+    <section id="api">
+      <h2>Everything you can call</h2>
+      <p class="section-note">That's the complete surface. If something isn't here, it doesn't exist. There's also one right-click item on a node asset — <strong>Assign New Id</strong> — which you'll only need in the duplicate-asset case below.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Reference</caption>
+          <tbody>
+            <tr class="api-group"><td colspan="2">GraphNode — a single node asset</td></tr>
+            <tr><td>title</td><td>Optional display name. Falls back to the asset's file name.</td></tr>
+            <tr><td>connectedTo</td><td>The list of neighbour nodes. This is the graph.</td></tr>
+            <tr><td>GetTitle()</td><td>The title, or the file name if you left the title blank.</td></tr>
+            <tr><td>GetId()</td><td>The node's permanent hidden ID. Saving uses this; you rarely will.</td></tr>
+
+            <tr class="api-group"><td colspan="2">GraphState — the player's progress</td></tr>
+            <tr><td>unlockedNodes</td><td>The list of nodes currently unlocked. Read it directly if you like.</td></tr>
+            <tr><td>IsUnlocked(node)</td><td>Does the player have this one?</td></tr>
+            <tr><td>CanUnlock(node)</td><td>Is it next to something already unlocked, and not already owned?</td></tr>
+            <tr><td>GetUnlockableNodes()</td><td>Every node available right now. Use it to light up buttons.</td></tr>
+            <tr><td>Unlock(node)</td><td>Unlocks it. Returns true only if something actually changed.</td></tr>
+            <tr><td>Lock(node)</td><td>Takes it away again — respec, losing a region.</td></tr>
+            <tr><td>ResetProgress()</td><td>Clears everything.</td></tr>
+            <tr><td>Save()</td><td>Returns a <code>List&lt;string&gt;</code> of node IDs to write to your save file.</td></tr>
+            <tr><td>Load(ids, graph)</td><td>Reads that list back. Skips anything that no longer exists.</td></tr>
+
+            <tr class="api-group"><td colspan="2">NodeGraph — the graph asset</td></tr>
+            <tr><td>startingNodes</td><td>What the player begins with. Set this in the Inspector.</td></tr>
+            <tr><td>allNodes</td><td>Every node. Filled in by Collect Nodes, don't hand-edit it.</td></tr>
+            <tr><td>CreateNewState()</td><td>A fresh GraphState with the starting nodes already unlocked.</td></tr>
+            <tr><td>FindPath(a, b)</td><td>Shortest route as a list from a to b, or <code>null</code> if there's no way.</td></tr>
+            <tr><td>FindPath(a, b, state)</td><td>Same, but only travels through unlocked nodes.</td></tr>
+            <tr><td>FindNodeById(id)</td><td>Turns a saved ID back into a node. Used by Load.</td></tr>
+            <tr><td>FindNodeByName(name)</td><td>Looks a node up by asset name. Handy for debug commands.</td></tr>
+            <tr><td>CollectNodes()</td><td>Right-click menu on the asset. Re-run it after adding nodes.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="skilltree">
+      <h2>Recipe: skill tree</h2>
+      <p class="section-note">Add your own node type, then gate unlocking on both the graph rule and your cost rule.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">SkillNode.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>using</b> UnityEngine;
+
+[CreateAssetMenu(menuName = <u>"Graph/Skill Node"</u>)]
+<b>public class</b> SkillNode : GraphNode
+{
+    <b>public int</b> cost = 1;
+    <b>public</b> Sprite icon;
+    <b>public string</b> description;
+}</pre>
+      </div>
+      <p>Now create <strong>Skill Node</strong> assets instead of plain <strong>Node</strong> assets. Everything in the kit still works, because a <code>SkillNode</code> <em>is</em> a <code>GraphNode</code>.</p>
+      <p>One rule if you ever add your own <code>OnValidate</code> to a subclass: write it as <code>protected override void OnValidate()</code> and start the body with <code>base.OnValidate();</code>. That's the method that hands out hidden IDs, so skipping it means your nodes never get one.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">SkillTreeUI.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>public</b> NodeGraph tree;
+<b>public int</b> pointsAvailable = 3;
+
+<b>private</b> GraphState state;
+
+<b>void</b> Start()
+{
+    state = tree.CreateNewState();
+}
+
+<i>// Call this from your skill button's OnClick.</i>
+<b>public void</b> OnSkillClicked(GraphNode node)
+{
+    SkillNode skill = (SkillNode)node;
+
+    <b>if</b> (!state.CanUnlock(node))
+    {
+        Debug.Log(<u>"You need the skill before it first."</u>);
+        <b>return</b>;
+    }
+
+    <b>if</b> (pointsAvailable &lt; skill.cost)
+    {
+        Debug.Log(<u>"Not enough points."</u>);
+        <b>return</b>;
+    }
+
+    pointsAvailable -= skill.cost;
+    state.Unlock(node);
+    RefreshButtons();
+}
+
+<b>void</b> RefreshButtons()
+{
+    <i>// Three visual states, straight from the two methods:</i>
+    <b>foreach</b> (GraphNode node <b>in</b> tree.allNodes)
+    {
+        <b>bool</b> owned     = state.IsUnlocked(node);
+        <b>bool</b> available = state.CanUnlock(node);
+
+        <i>// owned     -> bright
+        // available -> outlined and clickable
+        // neither   -> greyed out</i>
+    }
+}</pre>
+      </div>
+    </section>
+
+    <section id="map">
+      <h2>Recipe: world map</h2>
+      <p class="section-note">Same kit, two differences: connections go on both nodes, and you use <code>FindPath</code>.</p>
+      <p>For a map, add each road to <em>both</em> locations' <strong>Connected To</strong> lists — <code>Home</code> lists <code>Forest</code> and <code>Forest</code> lists <code>Home</code>. Then "unlocked" means "discovered", and passing the state to <code>FindPath</code> gives you travel restricted to places the player knows.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">TravelController.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>public</b> NodeGraph map;
+
+<b>private</b> GraphState discovered;
+<b>private</b> GraphNode playerLocation;
+
+<b>void</b> Start()
+{
+    discovered = map.CreateNewState();
+    playerLocation = map.startingNodes[0];
+}
+
+<b>public void</b> TravelTo(GraphNode destination)
+{
+    <i>// Third argument = only walk through discovered places.</i>
+    List&lt;GraphNode&gt; route = map.FindPath(playerLocation, destination, discovered);
+
+    <b>if</b> (route == <b>null</b>)
+    {
+        Debug.Log(<u>"You don't know a route there yet."</u>);
+        <b>return</b>;
+    }
+
+    Debug.Log(<u>"Travelling "</u> + (route.Count - 1) + <u>" steps."</u>);
+
+    <b>foreach</b> (GraphNode stop <b>in</b> route)
+    {
+        Debug.Log(<u>"  ...through "</u> + stop.GetTitle());
+    }
+
+    playerLocation = destination;
+    Arrive(destination);
+}
+
+<b>void</b> Arrive(GraphNode location)
+{
+    <i>// Arriving reveals the neighbours, which is your fog of war.</i>
+    <b>foreach</b> (GraphNode neighbour <b>in</b> location.connectedTo)
+    {
+        discovered.Unlock(neighbour);
+    }
+}</pre>
+      </div>
+      <p><code>route.Count - 1</code> is the number of steps — the list includes where you started, so a three-item route is two moves.</p>
+    </section>
+
+    <section id="dialogue">
+      <h2>Recipe: dialogue</h2>
+      <p class="section-note">The odd one out: dialogue needs no GraphState at all. You just walk the list.</p>
+      <p>A dialogue node's <code>connectedTo</code> list is its player choices, in order. There's no unlocking involved — you only ever track which line you're on.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">DialogueRunner.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><i>// Your node type:
+//   public class DialogueNode : GraphNode
+//   { public string speaker; public string line; }</i>
+
+<b>public</b> NodeGraph conversation;
+
+<b>private</b> GraphNode currentLine;
+
+<b>void</b> Start()
+{
+    currentLine = conversation.startingNodes[0];
+    Show();
+}
+
+<b>void</b> Show()
+{
+    DialogueNode line = (DialogueNode)currentLine;
+    Debug.Log(line.speaker + <u>": "</u> + line.line);
+
+    <b>if</b> (currentLine.connectedTo.Count == 0)
+    {
+        Debug.Log(<u>"[end of conversation]"</u>);
+        <b>return</b>;
+    }
+
+    <i>// One button per choice.</i>
+    <b>for</b> (<b>int</b> i = 0; i &lt; currentLine.connectedTo.Count; i++)
+    {
+        GraphNode choice = currentLine.connectedTo[i];
+        Debug.Log(<u>"  ["</u> + i + <u>"] "</u> + choice.GetTitle());
+    }
+}
+
+<b>public void</b> Choose(<b>int</b> index)
+{
+    currentLine = currentLine.connectedTo[index];
+    Show();
+}</pre>
+      </div>
+      <p>The catch: this puts the choice text on the <em>destination</em> node rather than on the connection. Usually fine. If you need a choice that reads differently from the line it leads to, make the choice its own little node in between.</p>
+    </section>
+
+    <section id="saving">
+      <h2>Saving</h2>
+      <p class="section-note"><code>Save()</code> hands you a list of strings. Where it goes is up to you.</p>
+      <p>You can't put a ScriptableObject reference in a save file, so each node quietly carries a permanent random ID — a 32-character string like <code>9f2c4a17e8b34d0e91c3…</code> — created once when you make the asset and never changed again. It's hidden in the Inspector because there's no reason to touch it.</p>
+      <p>The upshot: <strong>renaming and moving your node assets is completely safe.</strong> Call a skill <code>Strength</code> today and <code>Brawn</code> next month; existing saves keep working, because the name was never what got written down.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">PlayerPrefs, fine for prototyping</span><button class="copy" type="button">Copy</button></div>
+<pre><b>void</b> SaveGame()
+{
+    <i>// A list of node IDs, one per unlocked node.</i>
+    List&lt;<b>string</b>&gt; ids = state.Save();
+
+    PlayerPrefs.SetString(<u>"unlockedSkills"</u>, <b>string</b>.Join(<u>","</u>, ids.ToArray()));
+    PlayerPrefs.Save();
+}
+
+<b>void</b> LoadGame()
+{
+    <b>string</b> stored = PlayerPrefs.GetString(<u>"unlockedSkills"</u>, <u>""</u>);
+    List&lt;<b>string</b>&gt; ids = <b>new</b> List&lt;<b>string</b>&gt;(stored.Split(<u>','</u>));
+
+    state.Load(ids, tree);
+}</pre>
+      </div>
+      <p>For a real save system, put that <code>List&lt;string&gt;</code> in whatever class you serialise to JSON. <code>Load</code> quietly skips any ID it can't find, so if you delete a skill in an update, old saves load fine and just lose that one unlock rather than crashing.</p>
+    </section>
+
+    <section id="gotchas">
+      <h2>Two gotchas</h2>
+      <p class="section-note">Both cost people an afternoon. Neither is obvious from the code.</p>
+      <div class="warn">
+        <h3>Never put progress on a node</h3>
+        <p>Adding <code>public bool unlocked</code> to <code>GraphNode</code> is the obvious move and it breaks two ways. Unity writes the value into the asset file while you playtest, so your tree stays half-unlocked next time you hit Play; and every save slot shares one value. That's the whole reason <code>GraphState</code> is a separate object.</p>
+      </div>
+      <div class="warn">
+        <h3>Duplicating a node with Ctrl+D copies its ID</h3>
+        <p>Ctrl+D is the fast way to make a similar node, and it copies the hidden ID along with everything else — so two different skills look like the same skill to your save file. <strong>Collect Nodes</strong> checks for this and logs an error naming both assets and the fix: right-click the copy and choose <strong>Assign New Id</strong>. So after a round of duplicating, re-run Collect Nodes and glance at the Console.</p>
+      </div>
+    </section>
+
+    <section id="outgrow">
+      <h2>Outgrowing it</h2>
+      <p class="section-note">Things this deliberately doesn't do, and when you'd care.</p>
+      <dl class="outgrow">
+        <div>
+          <dt>Travel costs</dt>
+          <dd><code>FindPath</code> counts steps, not distance or fuel. If crossing a mountain should cost more than crossing a field, you need a weighted search instead.</dd>
+        </div>
+        <div>
+          <dt>Data on the connection</dt>
+          <dd>Connections carry nothing but "these two are linked". Conditions like "only if the player has the key" have to live on a node, not on the link between two.</dd>
+        </div>
+        <div>
+          <dt>A visual editor</dt>
+          <dd>Dragging assets into lists gets tedious past roughly fifty nodes. Rather than writing your own canvas — genuinely a thousand-plus lines — install <strong>xNode</strong>, which is free and does exactly this.</dd>
+        </div>
+        <div>
+          <dt>Speed</dt>
+          <dd>These are <code>List</code> lookups, which get slower as the graph grows. Irrelevant for hundreds of nodes and a menu that refreshes on click; worth revisiting if you're pathfinding across thousands every frame.</dd>
+        </div>
+      </dl>
+    </section>
+
+  </main>
+
+  <footer>
+    Four scripts, about 130 lines of actual code. Checked with 57 automated tests covering unlocking, prerequisites, respec, save and load, surviving asset renames, duplicate-ID detection, empty Inspector slots, one-way and two-way links, and pathfinding.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll(".copy").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var block = button.closest(".code");
+      var pre = block ? block.querySelector("pre") : null;
+      if (!pre) return;
+
+      var done = function (label) {
+        var original = "Copy";
+        button.textContent = label;
+        setTimeout(function () { button.textContent = original; }, 1600);
+      };
+
+      try {
+        navigator.clipboard.writeText(pre.innerText).then(
+          function () { done("Copied"); },
+          function () { done("Select it"); }
+        );
+      } catch (e) {
+        done("Select it");
+      }
+    });
+  });
+</script>
+</body>
+</html>

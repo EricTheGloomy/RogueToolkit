@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin:0; }
+  img { max-width:100%; }
+  [hidden] { display:none !important; }
+</style>
+<title>Unity Timeline Kit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground:#FBFCFD;
+    --panel:#F1F4F6;
+    --panel-2:#E8ECF0;
+    --line:#D2DAE1;
+    --line-soft:#E4E9ED;
+    --ink:#121A20;
+    --ink-2:#3D4B57;
+    --ink-3:#6B7885;
+    --accent:#464BB0;
+    --accent-2:#333779;
+    --accent-wash:#E7E8F7;
+    --warn:#8F5313;
+    --warn-line:#D8A96C;
+    --warn-wash:#FAF1E4;
+    --code-ground:#111A21;
+    --code-ink:#D8E2E9;
+    --code-line:#25333D;
+    --code-dim:#7E909E;
+    --code-key:#A0A4EE;
+    --code-str:#C8B478;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:#0D1216;
+      --panel:#151C22;
+      --panel-2:#1C252C;
+      --line:#293439;
+      --line-soft:#1F292F;
+      --ink:#E8EDF1;
+      --ink-2:#AFBCC6;
+      --ink-3:#7B8894;
+      --accent:#9195E8;
+      --accent-2:#B7BAF3;
+      --accent-wash:#1B1E3C;
+      --warn:#DCA463;
+      --warn-line:#5C4527;
+      --warn-wash:#241C12;
+      --code-ground:#080D11;
+      --code-line:#1E2A32;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#0D1216;
+    --panel:#151C22;
+    --panel-2:#1C252C;
+    --line:#293439;
+    --line-soft:#1F292F;
+    --ink:#E8EDF1;
+    --ink-2:#AFBCC6;
+    --ink-3:#7B8894;
+    --accent:#9195E8;
+    --accent-2:#B7BAF3;
+    --accent-wash:#1B1E3C;
+    --warn:#DCA463;
+    --warn-line:#5C4527;
+    --warn-wash:#241C12;
+    --code-ground:#080D11;
+    --code-line:#1E2A32;
+  }
+
+  * { box-sizing:border-box; }
+
+  body {
+    background:var(--ground);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .shell {
+    display:grid; grid-template-columns:1fr;
+    max-width:1180px; margin:0 auto; padding:0 24px 96px;
+  }
+  @media (min-width:1040px) {
+    .shell { grid-template-columns:200px minmax(0,1fr); gap:56px; padding-right:40px; }
+  }
+
+  .masthead {
+    grid-column:1/-1; padding:52px 0 30px;
+    border-bottom:1px solid var(--line); margin-bottom:44px;
+  }
+  .eyebrow {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11.5px; font-weight:500; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 14px;
+  }
+  h1 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:700; font-size:clamp(2rem, 5vw, 2.85rem);
+    line-height:1.06; letter-spacing:-.026em; margin:0 0 16px; text-wrap:balance;
+  }
+  .standfirst { font-size:1.075rem; color:var(--ink-2); max-width:62ch; margin:0; }
+  .standfirst strong { color:var(--ink); font-weight:600; }
+
+  nav.toc { display:none; }
+  @media (min-width:1040px) {
+    nav.toc { display:block; position:sticky; top:32px; align-self:start; padding-top:4px; }
+  }
+  nav.toc ol { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  nav.toc a {
+    display:block;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.5px; color:var(--ink-3); text-decoration:none;
+    padding:5px 0 5px 12px; border-left:2px solid var(--line-soft);
+    transition:color .14s, border-color .14s;
+  }
+  nav.toc a:hover, nav.toc a:focus-visible { color:var(--accent); border-left-color:var(--accent); }
+
+  main { min-width:0; display:flex; flex-direction:column; gap:52px; }
+  section { scroll-margin-top:24px; min-width:0; }
+
+  h2 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:600; font-size:1.45rem; letter-spacing:-.016em;
+    margin:0 0 6px; text-wrap:balance;
+  }
+  h3 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:600; font-size:1.03rem; letter-spacing:-.008em; margin:0 0 8px;
+  }
+  .section-note { color:var(--ink-3); font-size:.925rem; margin:0 0 22px; max-width:64ch; }
+  p { max-width:66ch; margin:0 0 16px; }
+  p:last-child { margin-bottom:0; }
+  a { color:var(--accent-2); text-decoration-thickness:1px; text-underline-offset:2px; }
+
+  code {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.855em; background:var(--panel-2);
+    border-radius:3px; padding:.12em .34em; color:var(--ink);
+  }
+
+  .code {
+    background:var(--code-ground); border:1px solid var(--code-line);
+    border-radius:6px; margin:0 0 18px; overflow:hidden;
+  }
+  .code-head {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:7px 12px; border-bottom:1px solid var(--code-line);
+  }
+  .code-name {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--code-dim);
+  }
+  .copy {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--code-dim); background:transparent;
+    border:1px solid var(--code-line); border-radius:4px;
+    padding:3px 9px; cursor:pointer; transition:color .14s, border-color .14s;
+  }
+  .copy:hover, .copy:focus-visible { color:var(--code-key); border-color:var(--code-key); }
+  .code pre {
+    margin:0; padding:14px 16px; overflow-x:auto;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.9px; line-height:1.72; color:var(--code-ink); tab-size:4;
+  }
+  .code pre b { color:var(--code-key); font-weight:500; }
+  .code pre i { color:var(--code-dim); font-style:normal; }
+  .code pre u { color:var(--code-str); text-decoration:none; }
+
+  ol.steps { list-style:none; counter-reset:s; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  ol.steps > li {
+    counter-increment:s; position:relative;
+    padding:12px 0 14px 46px; border-top:1px solid var(--line-soft);
+  }
+  ol.steps > li:last-child { border-bottom:1px solid var(--line-soft); }
+  ol.steps > li::before {
+    content:counter(s); position:absolute; left:0; top:12px;
+    width:27px; height:27px; display:grid; place-items:center; border-radius:50%;
+    background:var(--accent-wash); color:var(--accent);
+    font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:12px; font-weight:600;
+  }
+  ol.steps p { margin:0; }
+  ol.steps p + p { margin-top:5px; color:var(--ink-3); font-size:.92rem; }
+
+  .cards { display:grid; gap:10px; margin:0 0 18px; padding:0; list-style:none; }
+  @media (min-width:640px) { .cards { grid-template-columns:1fr 1fr; } }
+  .cards li {
+    background:var(--panel); border:1px solid var(--line-soft);
+    border-radius:6px; padding:14px 16px;
+  }
+  .cards .fname {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.5px; font-weight:600; color:var(--accent);
+    display:block; margin-bottom:5px;
+  }
+  .cards p { font-size:.91rem; color:var(--ink-2); margin:0; max-width:none; }
+
+  .modes { display:grid; gap:12px; margin:0 0 18px; padding:0; list-style:none; }
+  @media (min-width:700px) { .modes { grid-template-columns:1fr 1fr; } }
+  .modes li {
+    border:1px solid var(--line); border-radius:6px; padding:16px 18px;
+    background:var(--panel);
+  }
+  .modes h3 { color:var(--accent); margin-bottom:4px; }
+  .modes .call {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12px; color:var(--ink); display:block; margin:0 0 9px;
+  }
+  .modes p { font-size:.91rem; color:var(--ink-2); margin:0; max-width:none; }
+
+  .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel); }
+  table { border-collapse:collapse; width:100%; min-width:580px; font-size:.9rem; }
+  caption {
+    text-align:left;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
+    padding:11px 16px; border-bottom:1px solid var(--line);
+  }
+  tbody tr + tr { border-top:1px solid var(--line-soft); }
+  td { padding:9px 16px; vertical-align:top; }
+  td:first-child {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.4px; white-space:nowrap; color:var(--ink);
+  }
+  td:last-child { color:var(--ink-2); }
+  .api-group td {
+    background:var(--panel-2); font-family:Archivo, sans-serif;
+    font-weight:600; font-size:.86rem; color:var(--ink); white-space:normal;
+  }
+
+  figure { margin:0 0 18px; }
+  .diagram {
+    background:var(--panel); border:1px solid var(--line-soft);
+    border-radius:6px; padding:18px 16px 12px; overflow-x:auto;
+  }
+  .diagram svg { display:block; width:100%; min-width:580px; height:auto; }
+  figcaption { font-size:.86rem; color:var(--ink-3); margin-top:11px; max-width:66ch; }
+
+  .warn {
+    background:var(--warn-wash); border:1px solid var(--warn-line);
+    border-radius:6px; padding:16px 18px; margin:0 0 12px;
+  }
+  .warn h3 { color:var(--warn); margin-bottom:6px; }
+  .warn p { color:var(--ink-2); font-size:.94rem; }
+  .warn code { background:rgba(143,83,19,.11); }
+
+  dl.outgrow { margin:0; display:flex; flex-direction:column; }
+  dl.outgrow div { padding:13px 0; border-top:1px solid var(--line-soft); }
+  dl.outgrow div:last-child { border-bottom:1px solid var(--line-soft); }
+  dt { font-family:Archivo, sans-serif; font-weight:600; font-size:.97rem; margin-bottom:3px; }
+  dd { margin:0; color:var(--ink-2); font-size:.93rem; max-width:64ch; }
+
+  footer {
+    grid-column:1/-1; margin-top:60px; padding-top:22px;
+    border-top:1px solid var(--line); font-size:.86rem; color:var(--ink-3);
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <p class="eyebrow">Unity · ScriptableObjects · C# basics</p>
+    <h1>Unity Timeline Kit</h1>
+    <p class="standfirst">Put things in order, press start, they fire one after another. <strong>The same list drives a real-time production queue or a turn-based card sequence</strong> — you choose per project by calling a different method. Cards, attacks, spawn waves, build orders, cutscenes.</p>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#files">The files</a></li>
+      <li><a href="#setup">Setup</a></li>
+      <li><a href="#modes">Two ways to drive it</a></li>
+      <li><a href="#stacking">How the timing works</a></li>
+      <li><a href="#api">Everything you can call</a></li>
+      <li><a href="#queue">Recipe: production queue</a></li>
+      <li><a href="#cards">Recipe: card sequence</a></li>
+      <li><a href="#building">Recipe: player builds it</a></li>
+      <li><a href="#waiting">Waiting for an animation</a></li>
+      <li><a href="#saving">Saving</a></li>
+      <li><a href="#gotchas">Three gotchas</a></li>
+      <li><a href="#outgrow">Outgrowing it</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="files">
+      <h2>The files</h2>
+      <p class="section-note">Six files. The first three are what you build with, the next two run it.</p>
+      <ul class="cards">
+        <li><span class="fname">TimelineAction.cs</span><p>One thing that can happen, and how long it takes. Inherit to add your own data.</p></li>
+        <li><span class="fname">Timeline.cs</span><p>The ordered list. Add, remove, drag-reorder, capacity limits, timing maths.</p></li>
+        <li><span class="fname">TimelineSignal.cs</span><p>"Something just happened." What the runner hands back to you.</p></li>
+        <li><span class="fname">TimelineRunner.cs</span><p>Walks the playhead along and reports what it passed.</p></li>
+        <li><span class="fname">TimelineLibrary.cs</span><p>The asset your game points at: the palette, the save lookup, optional presets.</p></li>
+        <li><span class="fname">TimelineExample.cs</span><p>Zero-setup demo. Press Play, read the Console. Delete once it clicks.</p></li>
+      </ul>
+      <div class="warn">
+        <h3>Nothing to do with Unity's own Timeline package</h3>
+        <p>Different thing entirely, and the names don't actually clash because Unity's live in the <code>UnityEngine.Timeline</code> namespace while these are global. But if you ever see an "ambiguous reference" error in a file that has <code>using UnityEngine.Timeline;</code>, that's the reason — drop that using, or write this kit's class as <code>global::Timeline</code>.</p>
+      </div>
+    </section>
+
+    <section id="setup">
+      <h2>Setup, about one minute</h2>
+      <p class="section-note">The demo builds its actions in code, so you can watch it work before authoring anything.</p>
+      <ol class="steps">
+        <li><p>Copy the six <code>.cs</code> files into your project and let Unity compile.</p></li>
+        <li>
+          <p>Add the <strong>Timeline Example</strong> component to an empty GameObject. <strong>Leave the slot empty.</strong> Press Play.</p>
+          <p>You'll see the same five actions run twice — instantly turn-based, then over four real seconds.</p>
+        </li>
+        <li>
+          <p>Now author your own: <strong>right-click → Create → Timeline → Action</strong>. Make a few, and set each one's <strong>Duration</strong>.</p>
+          <p>Duration is seconds if you drive it in real time. If you're turn-based, leave everything at 1 and forget about it.</p>
+        </li>
+        <li>
+          <p><strong>Create → Timeline → Library</strong>. Drag every action into <strong>All Actions</strong>. If you want a fixed sequence rather than one the player builds, drag them into <strong>Preset Sequence</strong> too, in order.</p>
+          <p>Then right-click the Library and pick <strong>Check For Problems</strong>.</p>
+        </li>
+        <li><p>Drag the Library into the demo component's slot and press Play again — it'll run your preset instead of the built-in one.</p></li>
+      </ol>
+    </section>
+
+    <section id="modes">
+      <h2>Two ways to drive it</h2>
+      <p class="section-note">Same timeline, same actions, same signals. One method call is the whole difference.</p>
+      <ul class="modes">
+        <li>
+          <h3>Real time</h3>
+          <span class="call">runner.Tick(Time.deltaTime)</span>
+          <p>Called every frame from <code>Update()</code>. Durations mean seconds. Use it for production queues, attack windups, spawn waves, anything that plays out while the player watches.</p>
+        </li>
+        <li>
+          <h3>Turn based</h3>
+          <span class="call">runner.StepOne()</span>
+          <p>Called when you want the next thing to happen. Durations stop mattering entirely. Use it for card games, puzzle games, or stepping through a scripted sequence on a keypress.</p>
+        </li>
+      </ul>
+      <p>Both hand back the same list of signals. The runner never calls your methods and doesn't use C# events — you look through what it gives you, which makes the whole thing easy to follow and easy to test:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">The entire integration</span><button class="copy" type="button">Copy</button></div>
+<pre><b>void</b> Update()
+{
+    <b>foreach</b> (TimelineSignal signal <b>in</b> runner.Tick(Time.deltaTime))
+    {
+        <b>if</b> (signal.kind == TimelineSignal.Kind.ActionStarted)
+        {
+            DoTheThing(signal.action);   <i>// &lt;- your game happens here</i>
+        }
+    }
+}</pre>
+      </div>
+      <p>Nine times out of ten <code>ActionStarted</code> is the only signal you care about. The other two are <code>ActionFinished</code> and <code>TimelineFinished</code>.</p>
+    </section>
+
+    <section id="stacking">
+      <h2>How the timing works</h2>
+      <p class="section-note">Nothing is stored. Start and end times are worked out by stacking the entries up, which is why editing the list can't corrupt the timing.</p>
+      <figure>
+        <div class="diagram">
+          <svg viewBox="0 0 640 176" role="img" aria-label="A timeline strip four seconds long: two half-second jabs, a one-and-a-half-second wind up, a half-second gap, then a one-second haymaker. The playhead sits at 1.6 seconds, inside the wind up.">
+            <g font-family="'IBM Plex Sans', sans-serif" font-size="10.5" text-anchor="middle">
+
+              <rect x="40" y="52" width="70" height="42" rx="4" fill="var(--accent-wash)" stroke="var(--accent)"></rect>
+              <text x="75" y="72" fill="var(--accent-2)" font-weight="500">Jab</text>
+              <text x="75" y="86" fill="var(--accent)" font-family="'IBM Plex Mono', monospace" font-size="9">0.5s</text>
+
+              <rect x="110" y="52" width="70" height="42" rx="4" fill="var(--accent-wash)" stroke="var(--accent)"></rect>
+              <text x="145" y="72" fill="var(--accent-2)" font-weight="500">Jab</text>
+              <text x="145" y="86" fill="var(--accent)" font-family="'IBM Plex Mono', monospace" font-size="9">0.5s</text>
+
+              <rect x="180" y="52" width="210" height="42" rx="4" fill="var(--accent-wash)" stroke="var(--accent)"></rect>
+              <text x="285" y="72" fill="var(--accent-2)" font-weight="500">Wind Up</text>
+              <text x="285" y="86" fill="var(--accent)" font-family="'IBM Plex Mono', monospace" font-size="9">1.5s</text>
+
+              <rect x="390" y="52" width="70" height="42" rx="4" fill="none" stroke="var(--line)" stroke-dasharray="4 3"></rect>
+              <text x="425" y="78" fill="var(--ink-3)" font-family="'IBM Plex Mono', monospace" font-size="9">gap 0.5s</text>
+
+              <rect x="460" y="52" width="140" height="42" rx="4" fill="var(--accent-wash)" stroke="var(--accent)"></rect>
+              <text x="530" y="72" fill="var(--accent-2)" font-weight="500">Haymaker</text>
+              <text x="530" y="86" fill="var(--accent)" font-family="'IBM Plex Mono', monospace" font-size="9">1.0s</text>
+
+              <g stroke="var(--line)" stroke-width="1">
+                <path d="M 40 104 L 600 104"></path>
+                <path d="M 40 104 L 40 110"></path>
+                <path d="M 180 104 L 180 110"></path>
+                <path d="M 320 104 L 320 110"></path>
+                <path d="M 460 104 L 460 110"></path>
+                <path d="M 600 104 L 600 110"></path>
+              </g>
+              <g fill="var(--ink-3)" font-family="'IBM Plex Mono', monospace" font-size="9.5">
+                <text x="40" y="124">0s</text>
+                <text x="180" y="124">1s</text>
+                <text x="320" y="124">2s</text>
+                <text x="460" y="124">3s</text>
+                <text x="600" y="124">4s</text>
+              </g>
+
+              <g>
+                <path d="M 264 40 L 264 100" stroke="var(--ink)" stroke-width="1.6"></path>
+                <path d="M 258 34 L 270 34 L 264 42 z" fill="var(--ink)"></path>
+                <text x="264" y="26" fill="var(--ink)" font-size="10" font-weight="600">playhead</text>
+              </g>
+
+              <text x="320" y="152" fill="var(--ink-3)" font-size="10" font-family="'IBM Plex Mono', monospace">GetProgress() = 1.6 / 4.0 = 0.4</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>At 1.6s the playhead is inside <strong>Wind Up</strong>. You were handed <code>ActionStarted[2]</code> back at 1.0s and you'll get <code>ActionFinished[2]</code> at 2.5s. Nothing at all is reported while it sits in the middle of an action, or in the gap.</figcaption>
+      </figure>
+      <p>Because times are derived rather than stored, <code>Move</code> and <code>RemoveAt</code> automatically re-time everything after the change. There's no cached schedule to get out of sync — which is the usual way a hand-rolled sequencer starts producing mystery bugs.</p>
+      <p>A gap is a <code>delayBefore</code> on the following entry, not an entry of its own. Set it when you want breathing room in a scripted sequence; leave it at zero and things run back to back.</p>
+    </section>
+
+    <section id="api">
+      <h2>Everything you can call</h2>
+      <p class="section-note">The complete surface.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Reference</caption>
+          <tbody>
+            <tr class="api-group"><td colspan="2">TimelineAction — the asset (what can happen)</td></tr>
+            <tr><td>displayName</td><td>For your UI. Falls back to the asset's file name.</td></tr>
+            <tr><td>duration</td><td>Seconds in real time; ignored if you step manually. 0 means instant.</td></tr>
+            <tr><td>waitForFinish</td><td>Park the timeline here until your code calls FinishCurrent.</td></tr>
+            <tr><td>customTag</td><td>Free text your own code can switch on.</td></tr>
+
+            <tr class="api-group"><td colspan="2">Timeline — the ordered list</td></tr>
+            <tr><td>Count</td><td>How many entries.</td></tr>
+            <tr><td>Add(action)</td><td>Puts it on the end. Returns false if it didn't fit.</td></tr>
+            <tr><td>Add(action, delay)</td><td>Same, with dead air before it.</td></tr>
+            <tr><td>Insert(i, action, delay)</td><td>Puts it at a position. An index past the end appends.</td></tr>
+            <tr><td>CanAdd(action)</td><td>Would it fit? Use it to grey out your palette buttons.</td></tr>
+            <tr><td>RemoveAt(i)</td><td>Takes one out.</td></tr>
+            <tr><td>Move(from, to)</td><td>Drag-to-reorder.</td></tr>
+            <tr><td>Clear()</td><td>Empties it.</td></tr>
+            <tr><td>GetAction(i)</td><td>What's in that slot. Null if out of range.</td></tr>
+            <tr><td>maxEntries</td><td>Cap on how many. 0 means no limit.</td></tr>
+            <tr><td>maxTotalDuration</td><td>Cap on total length — "action points". 0 means no limit.</td></tr>
+            <tr><td>GetTotalDuration()</td><td>Full length including gaps.</td></tr>
+            <tr><td>GetStartTime(i)</td><td>When that entry begins. Derived, never cached.</td></tr>
+            <tr><td>Save() / Load(save, lib)</td><td>To and from a plain serialisable object.</td></tr>
+
+            <tr class="api-group"><td colspan="2">TimelineRunner — plays it</td></tr>
+            <tr><td>Play(timeline)</td><td>Load and start from the beginning.</td></tr>
+            <tr><td>Tick(deltaTime)</td><td>Real-time driving. Returns what happened.</td></tr>
+            <tr><td>StepOne()</td><td>Turn-based driving. Returns what happened.</td></tr>
+            <tr><td>Pause() / Resume()</td><td>Freeze and unfreeze. Resume picks up exactly where it stopped.</td></tr>
+            <tr><td>Stop()</td><td>Cancel and rewind. You must Play again after this.</td></tr>
+            <tr><td>speed</td><td>2 is double time, 0.5 is half. Only affects Tick.</td></tr>
+            <tr><td>loop</td><td>Start over when it ends.</td></tr>
+            <tr><td>IsPlaying()</td><td>Still going?</td></tr>
+            <tr><td>GetProgress()</td><td>0 to 1, for a progress bar.</td></tr>
+            <tr><td>GetRunningAction()</td><td>What's happening right now, or null.</td></tr>
+            <tr><td>IsWaiting()</td><td>Parked on a waitForFinish action?</td></tr>
+            <tr><td>FinishCurrent()</td><td>Release a parked action. Returns what happened.</td></tr>
+
+            <tr class="api-group"><td colspan="2">TimelineLibrary — the asset your game points at</td></tr>
+            <tr><td>allActions</td><td>The palette, and the lookup used when loading a save.</td></tr>
+            <tr><td>BuildEmpty(max, maxLen)</td><td>An empty timeline with those limits, for the player to fill.</td></tr>
+            <tr><td>BuildPreset()</td><td>A timeline filled from the authored Preset Sequence.</td></tr>
+            <tr><td>FindActionById(id)</td><td>Turns a saved ID back into an action.</td></tr>
+            <tr><td>CheckForProblems()</td><td>Right-click menu. Duplicate IDs, empty slots, stray presets.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="queue">
+      <h2>Recipe: production queue</h2>
+      <p class="section-note">Real time, with a progress bar. The classic strategy-game build queue.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">BuildQueue.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>public</b> TimelineLibrary buildables;
+<b>public</b> Image progressBar;
+<b>public</b> Transform spawnPoint;
+
+<b>private</b> Timeline queue;
+<b>private</b> TimelineRunner runner = <b>new</b> TimelineRunner();
+
+<b>void</b> Start()
+{
+    <i>// Five things queued at once, no limit on total build time.</i>
+    queue = buildables.BuildEmpty(5, 0f);
+}
+
+<i>// Wire this to your build buttons.</i>
+<b>public void</b> QueueUp(TimelineAction thing)
+{
+    <b>if</b> (!queue.Add(thing))
+    {
+        Debug.Log(<u>"Queue is full."</u>);
+        <b>return</b>;
+    }
+
+    <i>// Start the queue if it was idle. Play() rewinds, so only do this when
+    // nothing is running - otherwise you would restart the whole queue.</i>
+    <b>if</b> (!runner.IsPlaying()) runner.Play(queue);
+}
+
+<b>void</b> Update()
+{
+    <b>foreach</b> (TimelineSignal signal <b>in</b> runner.Tick(Time.deltaTime))
+    {
+        <b>if</b> (signal.kind == TimelineSignal.Kind.ActionFinished)
+        {
+            <i>// A build FINISHES before the unit appears - that is the
+            // difference between a queue and an attack sequence.</i>
+            BuildableAction built = (BuildableAction)signal.action;
+            Instantiate(built.prefab, spawnPoint.position, Quaternion.identity);
+        }
+    }
+
+    progressBar.fillAmount = runner.GetProgress();
+}</pre>
+      </div>
+      <p>Note this one reacts to <code>ActionFinished</code>, not <code>ActionStarted</code> — a tank appears when its build time is up, whereas a punch lands when it starts. Same kit, opposite signal.</p>
+    </section>
+
+    <section id="cards">
+      <h2>Recipe: card sequence</h2>
+      <p class="section-note">Turn based. The player queues cards, then hits Resolve and watches them go off one at a time.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">CardResolver.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>public</b> TimelineLibrary cards;
+
+<b>private</b> Timeline played;
+<b>private</b> TimelineRunner runner = <b>new</b> TimelineRunner();
+
+<b>void</b> Start()
+{
+    <i>// Three cards a turn, and durations are irrelevant because we step.</i>
+    played = cards.BuildEmpty(3, 0f);
+}
+
+<b>public void</b> PlayCard(TimelineAction card) { played.Add(card); }
+<b>public void</b> TakeBack(<b>int</b> slot)            { played.RemoveAt(slot); }
+<b>public void</b> Reorder(<b>int</b> from, <b>int</b> to)   { played.Move(from, to); }
+
+<i>// The "Resolve" button.</i>
+<b>public void</b> Resolve()
+{
+    runner.Play(played);
+    StartCoroutine(ResolveOneAtATime());
+}
+
+<i>// A coroutine gives each card a moment on screen. In a real game you would
+// wait for an animation to finish rather than a fixed delay.</i>
+IEnumerator ResolveOneAtATime()
+{
+    <b>while</b> (runner.IsPlaying())
+    {
+        <b>foreach</b> (TimelineSignal signal <b>in</b> runner.StepOne())
+        {
+            <b>if</b> (signal.kind == TimelineSignal.Kind.ActionStarted)
+            {
+                CardAction card = (CardAction)signal.action;
+                ApplyCard(card);
+            }
+        }
+
+        <b>yield return new</b> WaitForSeconds(0.4f);
+    }
+
+    played.Clear();
+    StartNextTurn();
+}</pre>
+      </div>
+    </section>
+
+    <section id="building">
+      <h2>Recipe: letting the player build it</h2>
+      <p class="section-note">The bit that makes it feel like a timeline rather than a script.</p>
+      <p><code>CanAdd</code> is what you hang your UI off — it accounts for both limits at once, so a palette button can grey out before the player finds out the hard way:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Refreshing the palette</span><button class="copy" type="button">Copy</button></div>
+<pre><b>void</b> RefreshPalette()
+{
+    <b>for</b> (<b>int</b> i = 0; i &lt; paletteButtons.Length; i++)
+    {
+        TimelineAction action = library.allActions[i];
+
+        paletteButtons[i].interactable = timeline.CanAdd(action);
+    }
+
+    <i>// "3 / 5 slots"  or  "2.5s / 4.0s used"</i>
+    slotsLabel.text = timeline.Count + <u>" / "</u> + timeline.maxEntries;
+    lengthLabel.text = timeline.GetTotalDuration().ToString(<u>"0.0"</u>) + <u>"s"</u>;
+}</pre>
+      </div>
+      <p>For drag-to-reorder, <code>Move(from, to)</code> is all you need — and because start times are derived rather than stored, everything after the moved entry re-times itself with no bookkeeping on your side.</p>
+      <p>Set <code>maxTotalDuration</code> rather than <code>maxEntries</code> when you want the interesting decision to be "three quick jabs or one big swing", which is usually the better game.</p>
+    </section>
+
+    <section id="waiting">
+      <h2>Waiting for an animation</h2>
+      <p class="section-note">For when the real length isn't a number you know up front.</p>
+      <p>Tick <strong>Wait For Finish</strong> on an action and the timeline stops dead the moment it starts. Time genuinely doesn't move — <code>Tick()</code> does nothing however long you tick it — until your code says otherwise:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Releasing a parked action</span><button class="copy" type="button">Copy</button></div>
+<pre><i>// ...in your signal handler</i>
+<b>if</b> (signal.kind == TimelineSignal.Kind.ActionStarted)
+{
+    animator.Play(<u>"BigSwing"</u>);
+    <i>// The timeline is now parked. runner.IsWaiting() is true.</i>
+}
+
+<i>// Called from an Animation Event at the end of the clip.</i>
+<b>public void</b> OnSwingAnimationDone()
+{
+    <b>foreach</b> (TimelineSignal signal <b>in</b> runner.FinishCurrent())
+    {
+        Handle(signal);
+    }
+}</pre>
+      </div>
+      <p>Use it for animations, player confirmations, and server replies. <code>StepOne()</code> treats a parked action as done, so a turn-based game needs no special case at all.</p>
+    </section>
+
+    <section id="saving">
+      <h2>Saving</h2>
+      <p class="section-note">Only worth doing for a queue that should survive quitting — a battle timeline usually shouldn't.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">PlayerPrefs, fine for prototyping</span><button class="copy" type="button">Copy</button></div>
+<pre><b>void</b> SaveQueue()
+{
+    PlayerPrefs.SetString(<u>"buildQueue"</u>, JsonUtility.ToJson(queue.Save()));
+    PlayerPrefs.Save();
+}
+
+<b>void</b> LoadQueue()
+{
+    <b>string</b> json = PlayerPrefs.GetString(<u>"buildQueue"</u>, <u>""</u>);
+    <b>if</b> (json == <u>""</u>) <b>return</b>;
+
+    queue.Load(JsonUtility.FromJson&lt;TimelineSave&gt;(json), buildables);
+}</pre>
+      </div>
+      <p>Actions carry a permanent hidden ID, same as the other two kits, so renaming and moving your action assets is safe. Anything the library no longer knows about is skipped rather than crashing, so deleting a buildable in an update won't break old saves.</p>
+      <p>The playhead position isn't saved — a loaded queue starts from the beginning. If you need mid-action resume, save <code>runner.GetPosition()</code> yourself alongside it.</p>
+    </section>
+
+    <section id="gotchas">
+      <h2>Three gotchas</h2>
+      <p class="section-note">One is a design constraint, two are easy mistakes.</p>
+      <div class="warn">
+        <h3>Only one action runs at a time</h3>
+        <p>That's the point of "one after another", and it's deliberate — it's what keeps the whole thing comprehensible. If you need two things genuinely overlapping, use two runners with two timelines. Don't try to bend this one; overlapping sequencers are where simple timeline code turns into a monster.</p>
+      </div>
+      <div class="warn">
+        <h3>Play rewinds — don't call it to resume</h3>
+        <p><code>Play()</code> always starts from the beginning. Adding to a queue that's already running and then calling <code>Play()</code> again restarts the lot. Check <code>IsPlaying()</code> first, as the production-queue recipe does. To un-pause, use <code>Resume()</code>.</p>
+      </div>
+      <div class="warn">
+        <h3>Ctrl+D copies an action's hidden ID</h3>
+        <p>Duplicating an action asset copies its ID too, so two actions look identical to your save file. Right-click your Library → <strong>Check For Problems</strong> catches it, along with empty slots and preset actions missing from the palette. Run it after a round of duplicating.</p>
+      </div>
+      <p>Two things you don't have to worry about, because they're handled: a big <code>deltaTime</code> from a lag spike never skips an action — one <code>Tick</code> reports everything the playhead passed, in order. And <code>ActionFinished</code> always arrives before the next <code>ActionStarted</code> at a boundary, so you can always clean up one thing before the next begins.</p>
+    </section>
+
+    <section id="outgrow">
+      <h2>Outgrowing it</h2>
+      <p class="section-note">What this deliberately doesn't do.</p>
+      <dl class="outgrow">
+        <div>
+          <dt>Parallel tracks</dt>
+          <dd>One action at a time, as above. Music, VFX and gameplay all firing at once on separate lanes is a real thing to want — that's when you graduate to Unity's own Timeline package, or run several of these side by side.</dd>
+        </div>
+        <div>
+          <dt>Scrubbing backwards</dt>
+          <dd>The playhead only goes forwards. Rewinding would mean every action knowing how to undo itself, which is a much bigger idea than this kit.</dd>
+        </div>
+        <div>
+          <dt>Conditions on entries</dt>
+          <dd>Every action on the list fires. For "only if the player still has mana", check it in your handler and ignore the signal — or borrow <code>Requirement</code> from the adventure kit, which was built for exactly that.</dd>
+        </div>
+        <div>
+          <dt>Actions that change the list mid-play</dt>
+          <dd>Editing a timeline while its runner is playing it will re-time things under the playhead and confuse the runner. Queue up changes and apply them between runs, or use a second timeline.</dd>
+        </div>
+      </dl>
+    </section>
+
+  </main>
+
+  <footer>
+    Six scripts. Checked with 115 automated tests covering list editing and reordering, both capacity limits, timing maths and re-timing after edits, signal ordering at exact boundaries, one enormous tick versus 400 tiny ones, gaps, instant actions, speed, progress, pause/resume/stop semantics, looping and the zero-length loop guard, wait-for-finish parking, turn-based stepping, null inputs throughout, library problem detection, and save/load including renamed assets and truncated files.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll(".copy").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var block = button.closest(".code");
+      var pre = block ? block.querySelector("pre") : null;
+      if (!pre) return;
+
+      var done = function (label) {
+        button.textContent = label;
+        setTimeout(function () { button.textContent = "Copy"; }, 1600);
+      };
+
+      try {
+        navigator.clipboard.writeText(pre.innerText).then(
+          function () { done("Copied"); },
+          function () { done("Select it"); }
+        );
+      } catch (e) {
+        done("Select it");
+      }
+    });
+  });
+</script>
+</body>
+</html>

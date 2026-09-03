@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin:0; }
+  img { max-width:100%; }
+  [hidden] { display:none !important; }
+</style>
+<title>Unity Card Deck Kit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground:#FBFCFD;
+    --panel:#F1F4F6;
+    --panel-2:#E8ECF0;
+    --line:#D2DAE1;
+    --line-soft:#E4E9ED;
+    --ink:#121A20;
+    --ink-2:#3D4B57;
+    --ink-3:#6B7885;
+    --accent:#245F8F;
+    --accent-2:#17456B;
+    --accent-wash:#E1EDF7;
+    --warn:#8F5313;
+    --warn-line:#D8A96C;
+    --warn-wash:#FAF1E4;
+    --code-ground:#111A21;
+    --code-ink:#D8E2E9;
+    --code-line:#25333D;
+    --code-dim:#7E909E;
+    --code-key:#8CC0EA;
+    --code-str:#C8B478;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:#0D1216;
+      --panel:#151C22;
+      --panel-2:#1C252C;
+      --line:#293439;
+      --line-soft:#1F292F;
+      --ink:#E8EDF1;
+      --ink-2:#AFBCC6;
+      --ink-3:#7B8894;
+      --accent:#79B4E2;
+      --accent-2:#A5CDEE;
+      --accent-wash:#122333;
+      --warn:#DCA463;
+      --warn-line:#5C4527;
+      --warn-wash:#241C12;
+      --code-ground:#080D11;
+      --code-line:#1E2A32;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#0D1216;
+    --panel:#151C22;
+    --panel-2:#1C252C;
+    --line:#293439;
+    --line-soft:#1F292F;
+    --ink:#E8EDF1;
+    --ink-2:#AFBCC6;
+    --ink-3:#7B8894;
+    --accent:#79B4E2;
+    --accent-2:#A5CDEE;
+    --accent-wash:#122333;
+    --warn:#DCA463;
+    --warn-line:#5C4527;
+    --warn-wash:#241C12;
+    --code-ground:#080D11;
+    --code-line:#1E2A32;
+  }
+
+  * { box-sizing:border-box; }
+
+  body {
+    background:var(--ground); color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+
+  .shell { display:grid; grid-template-columns:1fr; max-width:1180px; margin:0 auto; padding:0 24px 96px; }
+  @media (min-width:1040px) { .shell { grid-template-columns:200px minmax(0,1fr); gap:56px; padding-right:40px; } }
+
+  .masthead { grid-column:1/-1; padding:52px 0 30px; border-bottom:1px solid var(--line); margin-bottom:44px; }
+  .eyebrow {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11.5px; font-weight:500; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 14px;
+  }
+  h1 {
+    font-family:Archivo, ui-sans-serif, system-ui, sans-serif;
+    font-weight:700; font-size:clamp(2rem, 5vw, 2.85rem);
+    line-height:1.06; letter-spacing:-.026em; margin:0 0 16px; text-wrap:balance;
+  }
+  .standfirst { font-size:1.075rem; color:var(--ink-2); max-width:62ch; margin:0; }
+  .standfirst strong { color:var(--ink); font-weight:600; }
+
+  nav.toc { display:none; }
+  @media (min-width:1040px) { nav.toc { display:block; position:sticky; top:32px; align-self:start; padding-top:4px; } }
+  nav.toc ol { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  nav.toc a {
+    display:block; font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.5px; color:var(--ink-3); text-decoration:none;
+    padding:5px 0 5px 12px; border-left:2px solid var(--line-soft);
+    transition:color .14s, border-color .14s;
+  }
+  nav.toc a:hover, nav.toc a:focus-visible { color:var(--accent); border-left-color:var(--accent); }
+
+  main { min-width:0; display:flex; flex-direction:column; gap:52px; }
+  section { scroll-margin-top:24px; min-width:0; }
+
+  h2 { font-family:Archivo, sans-serif; font-weight:600; font-size:1.45rem; letter-spacing:-.016em; margin:0 0 6px; text-wrap:balance; }
+  h3 { font-family:Archivo, sans-serif; font-weight:600; font-size:1.03rem; letter-spacing:-.008em; margin:0 0 8px; }
+  .section-note { color:var(--ink-3); font-size:.925rem; margin:0 0 22px; max-width:64ch; }
+  p { max-width:66ch; margin:0 0 16px; }
+  p:last-child { margin-bottom:0; }
+  a { color:var(--accent-2); text-decoration-thickness:1px; text-underline-offset:2px; }
+
+  code {
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:.855em; background:var(--panel-2); border-radius:3px;
+    padding:.12em .34em; color:var(--ink);
+  }
+
+  .code { background:var(--code-ground); border:1px solid var(--code-line); border-radius:6px; margin:0 0 18px; overflow:hidden; }
+  .code-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:7px 12px; border-bottom:1px solid var(--code-line); }
+  .code-name { font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--code-dim); }
+  .copy {
+    font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11px;
+    letter-spacing:.06em; text-transform:uppercase; color:var(--code-dim);
+    background:transparent; border:1px solid var(--code-line); border-radius:4px;
+    padding:3px 9px; cursor:pointer; transition:color .14s, border-color .14s;
+  }
+  .copy:hover, .copy:focus-visible { color:var(--code-key); border-color:var(--code-key); }
+  .code pre {
+    margin:0; padding:14px 16px; overflow-x:auto;
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:12.9px; line-height:1.72; color:var(--code-ink); tab-size:4;
+  }
+  .code pre b { color:var(--code-key); font-weight:500; }
+  .code pre i { color:var(--code-dim); font-style:normal; }
+  .code pre u { color:var(--code-str); text-decoration:none; }
+
+  ol.steps { list-style:none; counter-reset:s; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  ol.steps > li { counter-increment:s; position:relative; padding:12px 0 14px 46px; border-top:1px solid var(--line-soft); }
+  ol.steps > li:last-child { border-bottom:1px solid var(--line-soft); }
+  ol.steps > li::before {
+    content:counter(s); position:absolute; left:0; top:12px;
+    width:27px; height:27px; display:grid; place-items:center; border-radius:50%;
+    background:var(--accent-wash); color:var(--accent);
+    font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:12px; font-weight:600;
+  }
+  ol.steps p { margin:0; }
+  ol.steps p + p { margin-top:5px; color:var(--ink-3); font-size:.92rem; }
+
+  .cards { display:grid; gap:10px; margin:0 0 18px; padding:0; list-style:none; }
+  @media (min-width:640px) { .cards { grid-template-columns:1fr 1fr; } }
+  .cards li { background:var(--panel); border:1px solid var(--line-soft); border-radius:6px; padding:14px 16px; }
+  .cards .fname { font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:12.5px; font-weight:600; color:var(--accent); display:block; margin-bottom:5px; }
+  .cards p { font-size:.91rem; color:var(--ink-2); margin:0; max-width:none; }
+
+  .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel); }
+  table { border-collapse:collapse; width:100%; min-width:560px; font-size:.9rem; }
+  caption {
+    text-align:left; font-family:"IBM Plex Mono", ui-monospace, monospace;
+    font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
+    padding:11px 16px; border-bottom:1px solid var(--line);
+  }
+  thead td { font-family:Archivo, sans-serif; font-weight:600; font-size:.84rem; color:var(--ink); white-space:nowrap; border-bottom:1px solid var(--line); }
+  tbody tr + tr { border-top:1px solid var(--line-soft); }
+  td { padding:9px 16px; vertical-align:top; }
+  td:first-child { font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:12.4px; white-space:nowrap; color:var(--ink); }
+  td:last-child { color:var(--ink-2); }
+  .api-group td { background:var(--panel-2); font-family:Archivo, sans-serif; font-weight:600; font-size:.86rem; color:var(--ink); white-space:normal; }
+  .refusals td { font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11.8px; color:var(--accent-2); white-space:normal; }
+  .refusals td:last-child { font-family:"IBM Plex Sans", sans-serif; font-size:.87rem; color:var(--ink-2); }
+
+  figure { margin:0 0 18px; }
+  .diagram { background:var(--panel); border:1px solid var(--line-soft); border-radius:6px; padding:18px 16px 12px; overflow-x:auto; }
+  .diagram svg { display:block; width:100%; min-width:580px; height:auto; }
+  figcaption { font-size:.86rem; color:var(--ink-3); margin-top:11px; max-width:66ch; }
+
+  .warn { background:var(--warn-wash); border:1px solid var(--warn-line); border-radius:6px; padding:16px 18px; margin:0 0 12px; }
+  .warn h3 { color:var(--warn); margin-bottom:6px; }
+  .warn p { color:var(--ink-2); font-size:.94rem; }
+  .warn code { background:rgba(143,83,19,.11); }
+
+  dl.outgrow { margin:0; display:flex; flex-direction:column; }
+  dl.outgrow div { padding:13px 0; border-top:1px solid var(--line-soft); }
+  dl.outgrow div:last-child { border-bottom:1px solid var(--line-soft); }
+  dt { font-family:Archivo, sans-serif; font-weight:600; font-size:.97rem; margin-bottom:3px; }
+  dd { margin:0; color:var(--ink-2); font-size:.93rem; max-width:64ch; }
+
+  footer { grid-column:1/-1; margin-top:60px; padding-top:22px; border-top:1px solid var(--line); font-size:.86rem; color:var(--ink-3); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <p class="eyebrow">Unity · ScriptableObjects · C# basics</p>
+    <h1>Unity Card Deck Kit</h1>
+    <p class="standfirst">Deck, hand, discard, exile. Draw, play, target, reshuffle. <strong>The kit never learns what an "enemy" is</strong> — you tell it what's targetable right now, it validates what the player picked and hands it back, and dealing the damage stays your code's business.</p>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#files">The files</a></li>
+      <li><a href="#setup">Setup</a></li>
+      <li><a href="#piles">The four piles</a></li>
+      <li><a href="#instances">Kinds versus copies</a></li>
+      <li><a href="#targeting">Targeting</a></li>
+      <li><a href="#api">Everything you can call</a></li>
+      <li><a href="#turn">Recipe: a turn</a></li>
+      <li><a href="#ui">Recipe: the UI</a></li>
+      <li><a href="#effects">Recipe: card effects</a></li>
+      <li><a href="#saving">Saving a deck</a></li>
+      <li><a href="#gotchas">Four gotchas</a></li>
+      <li><a href="#outgrow">Outgrowing it</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="files">
+      <h2>The files</h2>
+      <p class="section-note">Eight files, one per idea. The first three are what you author with.</p>
+      <ul class="cards">
+        <li><span class="fname">Card.cs</span><p>One kind of card: cost, targeting, where it goes after playing.</p></li>
+        <li><span class="fname">CardInstance.cs</span><p>One physical copy, with its own id and its own cost tweak.</p></li>
+        <li><span class="fname">CardTarget.cs</span><p>Something a card can be pointed at. Your object, your meaning.</p></li>
+        <li><span class="fname">CardPile.cs</span><p>A stack of cards. Used for all four piles — there's no special hand code.</p></li>
+        <li><span class="fname">PlayResult.cs</span><p>What happened, with a plain-English reason for any refusal.</p></li>
+        <li><span class="fname">CardTable.cs</span><p>The four piles, energy, drawing, and the rules about playing.</p></li>
+        <li><span class="fname">CardLibrary.cs</span><p>The asset your game points at: starting deck, lookup, deck saving.</p></li>
+        <li><span class="fname">CardExample.cs</span><p>Zero-setup demo. Press Play, read the Console. Delete once it clicks.</p></li>
+      </ul>
+    </section>
+
+    <section id="setup">
+      <h2>Setup, about one minute</h2>
+      <ol class="steps">
+        <li><p>Copy the eight <code>.cs</code> files into your project and let Unity compile.</p></li>
+        <li>
+          <p>Add the <strong>Card Example</strong> component to an empty GameObject and press Play.</p>
+          <p>You'll see a 10-card deck dealt, four kinds of refusal explained, cards played at a goblin, a card exiling itself and drawing two, and the discard reshuffling when the draw pile runs dry.</p>
+        </li>
+        <li>
+          <p>Now author your own: <strong>right-click → Create → Cards → Card</strong>. Set the cost and the targeting.</p>
+          <p>Leave <strong>Targeting</strong> on <code>None</code> for a card that just does something to you.</p>
+        </li>
+        <li>
+          <p><strong>Create → Cards → Library</strong>. Drag every card into <strong>All Cards</strong>, then build the <strong>Starting Deck</strong> — dragging the same card in three times is how you get three copies.</p>
+          <p>Right-click the Library and pick <strong>Check For Problems</strong>.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="piles">
+      <h2>The four piles</h2>
+      <p class="section-note">All four are the same class. That's most of why this kit is small — there's no special "hand" code, just piles and moving cards between them.</p>
+      <figure>
+        <div class="diagram">
+          <svg viewBox="0 0 640 225" role="img" aria-label="Cards flow from the draw pile to the hand when drawn, from the hand to the discard pile when played or discarded, and back from the discard to the draw pile when it runs dry. Some cards go from the hand to the exile pile instead.">
+            <g font-family="'IBM Plex Sans', sans-serif" font-size="13" font-weight="600" text-anchor="middle">
+              <rect x="40" y="45" width="135" height="52" rx="6" fill="var(--accent-wash)" stroke="var(--accent)"></rect>
+              <text x="107" y="70" fill="var(--accent-2)">Draw pile</text>
+              <text x="107" y="86" fill="var(--accent)" font-size="9.5" font-weight="400" font-family="'IBM Plex Mono', monospace">shuffled</text>
+
+              <rect x="252" y="45" width="135" height="52" rx="6" fill="var(--accent-wash)" stroke="var(--accent)"></rect>
+              <text x="319" y="70" fill="var(--accent-2)">Hand</text>
+              <text x="319" y="86" fill="var(--accent)" font-size="9.5" font-weight="400" font-family="'IBM Plex Mono', monospace">maxHandSize</text>
+
+              <rect x="464" y="45" width="135" height="52" rx="6" fill="var(--accent-wash)" stroke="var(--accent)"></rect>
+              <text x="531" y="76" fill="var(--accent-2)">Discard pile</text>
+
+              <rect x="252" y="155" width="135" height="52" rx="6" fill="var(--panel-2)" stroke="var(--line)"></rect>
+              <text x="319" y="180" fill="var(--ink-2)">Exile pile</text>
+              <text x="319" y="196" fill="var(--ink-3)" font-size="9.5" font-weight="400" font-family="'IBM Plex Mono', monospace">gone for good</text>
+            </g>
+
+            <defs>
+              <marker id="cardArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--ink-3)"></path>
+              </marker>
+            </defs>
+
+            <g stroke="var(--ink-3)" stroke-width="1.4" fill="none" marker-end="url(#cardArrow)">
+              <path d="M 180 71 L 247 71"></path>
+              <path d="M 392 71 L 459 71"></path>
+              <path d="M 531 41 L 531 18 L 107 18 L 107 41"></path>
+              <path d="M 319 101 L 319 151"></path>
+            </g>
+
+            <g font-family="'IBM Plex Mono', monospace" font-size="9.5" fill="var(--ink-3)" text-anchor="middle">
+              <text x="213" y="62">Draw(5)</text>
+              <text x="425" y="62">played</text>
+              <text x="319" y="12">reshuffled automatically when the draw pile runs dry</text>
+            </g>
+            <text x="332" y="129" font-family="'IBM Plex Mono', monospace" font-size="9.5" fill="var(--ink-3)" text-anchor="start">afterPlay = Exile</text>
+          </svg>
+        </div>
+        <figcaption>The reshuffle is automatic: <code>Draw</code> tips the discard pile back in and shuffles it the moment the draw pile runs dry. If <em>both</em> are empty it returns fewer cards rather than looping, so <code>Draw</code> always tells you how many you actually got.</figcaption>
+      </figure>
+      <p><code>afterPlay</code> on each card decides which arrow it takes: <code>Discard</code> (the usual), <code>Exile</code>, <code>BackToHand</code>, or <code>ToDrawPile</code>.</p>
+    </section>
+
+    <section id="instances">
+      <h2>Kinds of card versus copies of card</h2>
+      <p class="section-note">The bit most people skip, and then have to retrofit painfully.</p>
+      <p>A <code>Card</code> asset is a <em>kind</em> of card. A <code>CardInstance</code> is one physical copy — the actual bit of cardboard. A deck with three Strikes in it has <strong>one</strong> Strike asset and <strong>three</strong> instances.</p>
+      <p>Without that split you can't tell one Strike in your hand from another, so you can't discard <em>that one</em>, upgrade <em>this one</em>, or animate them separately. It also gives you a free per-copy cost tweak:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">A discount on one copy only</span><button class="copy" type="button">Copy</button></div>
+<pre><i>// "This card costs 1 less this fight" - without touching the shared asset,
+// so every other copy of Strike in the deck is unaffected.</i>
+cardInstance.costChange = -1;
+
+<b>int</b> price = cardInstance.GetCost();   <i>// never goes below 0</i></pre>
+      </div>
+      <p>You build instances by handing the table a list of card assets — the same asset several times is exactly how you get several copies:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">A ten-card starting deck</span><button class="copy" type="button">Copy</button></div>
+<pre>List&lt;Card&gt; deck = <b>new</b> List&lt;Card&gt;();
+
+<b>for</b> (<b>int</b> i = 0; i &lt; 4; i++) deck.Add(strike);
+<b>for</b> (<b>int</b> i = 0; i &lt; 4; i++) deck.Add(defend);
+deck.Add(cleave);
+deck.Add(planAhead);
+
+table.StartNewGame(deck);   <i>// builds the instances and shuffles</i></pre>
+      </div>
+    </section>
+
+    <section id="targeting">
+      <h2>Targeting</h2>
+      <p class="section-note">The piece that keeps the kit reusable. It never learns what an "enemy" is.</p>
+      <p>Your game keeps a list of what's targetable right now. Rebuild it whenever something dies or spawns — that's what stops a card being played on a corpse:</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Whenever the board changes</span><button class="copy" type="button">Copy</button></div>
+<pre><b>void</b> RefreshTargets()
+{
+    table.availableTargets.Clear();
+
+    <b>foreach</b> (Enemy enemy <b>in</b> aliveEnemies)
+    {
+        <i>// kind, what to show in the UI, and the real object behind it</i>
+        table.availableTargets.Add(<b>new</b> CardTarget(<u>"enemy"</u>, enemy.displayName, enemy));
+    }
+
+    <b>foreach</b> (Ally ally <b>in</b> party)
+    {
+        table.availableTargets.Add(<b>new</b> CardTarget(<u>"ally"</u>, ally.displayName, ally));
+    }
+}</pre>
+      </div>
+      <p><code>targetKind</code> is your own word — <code>"enemy"</code>, <code>"ally"</code>, <code>"minion"</code>, <code>"card"</code>. The kit only compares strings; what they mean is entirely up to you.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>The four modes</caption>
+          <thead><tr><td>Targeting</td><td>What the player picks</td><td>Pass to Play</td></tr></thead>
+          <tbody>
+            <tr><td>None</td><td>nothing — it acts on you</td><td>null</td></tr>
+            <tr><td>ChooseOne</td><td>one thing of targetKind</td><td>a list of 1</td></tr>
+            <tr><td>ChooseMany</td><td>exactly targetsToChoose things</td><td>a list of that many</td></tr>
+            <tr><td>All</td><td>nothing — it hits every match</td><td>null</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:18px">Every refusal comes back as a sentence you can put straight on screen — which is also how you debug a card that won't play when you were sure it should:</p>
+      <div class="table-wrap">
+        <table class="refusals">
+          <caption>What refusals look like</caption>
+          <tbody>
+            <tr><td>"That card is not in your hand."</td><td>stale UI, or you passed the wrong instance</td></tr>
+            <tr><td>"Not enough energy (needs 2, you have 1)."</td><td>the numbers are in the message</td></tr>
+            <tr><td>"That card needs 1 enemy target, but 0 were picked."</td><td>you forgot to pass the targets</td></tr>
+            <tr><td>"A Dead Goblin is not a valid target any more."</td><td>you forgot to rebuild availableTargets</td></tr>
+            <tr><td>"You cannot play that on a ally."</td><td>wrong kind</td></tr>
+            <tr><td>"You cannot pick Goblin twice."</td><td>a ChooseMany with duplicates</td></tr>
+            <tr><td>"That card does not take a target."</td><td>targets passed to a None card</td></tr>
+            <tr><td>"There is no enemy to hit."</td><td>an All card with nothing on the board</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="api">
+      <h2>Everything you can call</h2>
+      <p class="section-note">The complete surface.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Reference</caption>
+          <tbody>
+            <tr class="api-group"><td colspan="2">CardTable — the game</td></tr>
+            <tr><td>StartNewGame(deckList)</td><td>Builds instances from a list of card assets and shuffles.</td></tr>
+            <tr><td>Draw(count)</td><td>Draws up to count. Returns how many you ACTUALLY got.</td></tr>
+            <tr><td>Play(card, targets)</td><td>Returns a PlayResult. Nothing changes on a refusal.</td></tr>
+            <tr><td>CanAfford(card)</td><td>Energy check only — for greying out cards in hand.</td></tr>
+            <tr><td>Discard(card)</td><td>One card from hand to the discard pile, unplayed.</td></tr>
+            <tr><td>DiscardHand()</td><td>The usual end of turn. Returns how many.</td></tr>
+            <tr><td>RefillEnergy()</td><td>Back to maxEnergy.</td></tr>
+            <tr><td>ReshuffleDiscardIntoDraw()</td><td>Happens automatically; call it yourself if you need to.</td></tr>
+            <tr><td>availableTargets</td><td>What can be pointed at right now. You keep this current.</td></tr>
+            <tr><td>GetTargetsOfKind(kind)</td><td>Just the enemies, say — for building a picker UI.</td></tr>
+            <tr><td>GetEveryCard()</td><td>Every card in all four piles. This is "your deck".</td></tr>
+            <tr><td>drawPile, hand, discardPile, exilePile</td><td>The piles themselves, if you need them.</td></tr>
+            <tr><td>maxHandSize, useEnergy, energy, maxEnergy</td><td>Settings. maxHandSize 0 means no limit.</td></tr>
+            <tr><td>Describe()</td><td>A snapshot of everything, for Debug.Log.</td></tr>
+
+            <tr class="api-group"><td colspan="2">PlayResult — what happened</td></tr>
+            <tr><td>played</td><td>Did it work?</td></tr>
+            <tr><td>refusedBecause</td><td>A sentence for the player. Empty when it worked.</td></tr>
+            <tr><td>card</td><td>The instance played. Cast card.card to reach your own fields.</td></tr>
+            <tr><td>targets</td><td>What it hit. Worked out for you on an All card.</td></tr>
+            <tr><td>energySpent</td><td>How much it cost.</td></tr>
+
+            <tr class="api-group"><td colspan="2">CardPile — any of the four</td></tr>
+            <tr><td>Count, IsEmpty</td><td>How many.</td></tr>
+            <tr><td>GetAll()</td><td>A copy, safe to loop while the pile changes.</td></tr>
+            <tr><td>GetAt(i), Contains(card)</td><td>Reading. Out of range gives null.</td></tr>
+            <tr><td>AddToTop / AddToBottom</td><td>Top is where you draw from.</td></tr>
+            <tr><td>TakeTop() / Take(card)</td><td>Removing. TakeTop gives null when empty.</td></tr>
+            <tr><td>Shuffle()</td><td>Proper Fisher-Yates — every order equally likely.</td></tr>
+            <tr><td>MoveAllTo(other)</td><td>Tip one pile into another.</td></tr>
+            <tr><td>Describe()</td><td>"Hand (3): Strike, Strike, Defend"</td></tr>
+
+            <tr class="api-group"><td colspan="2">CardLibrary — the asset your game points at</td></tr>
+            <tr><td>StartNewGame()</td><td>A table already dealt with the starting deck.</td></tr>
+            <tr><td>SaveDeck(cards) / LoadDeck(ids)</td><td>Deck to IDs and back. Duplicates preserved.</td></tr>
+            <tr><td>FindCardById(id)</td><td>Turns a saved ID back into a card.</td></tr>
+            <tr><td>CheckForProblems()</td><td>Right-click menu. Run it after adding cards.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="turn">
+      <h2>Recipe: a turn</h2>
+      <p class="section-note">The whole loop is four calls.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">CombatController.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>public</b> CardLibrary library;
+
+<b>private</b> CardTable table;
+
+<b>void</b> StartCombat()
+{
+    table = library.StartNewGame();
+    RefreshTargets();
+    StartTurn();
+}
+
+<b>void</b> StartTurn()
+{
+    table.RefillEnergy();
+    table.Draw(5);
+    Redraw();
+}
+
+<i>// The "End Turn" button.</i>
+<b>public void</b> EndTurn()
+{
+    table.DiscardHand();
+
+    EnemiesTakeTheirTurn();
+    RefreshTargets();      <i>// something may have died</i>
+
+    StartTurn();
+}</pre>
+      </div>
+      <p>There's no turn structure baked into the kit on purpose — turns differ too much between games. These are the pieces; the order is yours.</p>
+    </section>
+
+    <section id="ui">
+      <h2>Recipe: the UI</h2>
+      <p class="section-note">Clicking a card, then clicking a target.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">HandUI.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>private</b> CardInstance selected;   <i>// the card waiting for a target</i>
+
+<i>// 1. Player clicks a card in hand.</i>
+<b>public void</b> OnCardClicked(CardInstance card)
+{
+    <b>if</b> (!table.CanAfford(card))
+    {
+        Message(<u>"Not enough energy."</u>);
+        <b>return</b>;
+    }
+
+    <b>if</b> (card.card.NeedsATarget() &amp;&amp; card.card.targeting != Card.Targeting.All)
+    {
+        selected = card;
+        HighlightTargets(card.card.targetKind);   <i>// glow the valid enemies</i>
+        <b>return</b>;
+    }
+
+    <i>// Needs nothing picked - play it straight away.</i>
+    Resolve(table.Play(card, <b>null</b>));
+}
+
+<i>// 2. Player clicks an enemy.</i>
+<b>public void</b> OnTargetClicked(CardTarget target)
+{
+    <b>if</b> (selected == <b>null</b>) <b>return</b>;
+
+    List&lt;CardTarget&gt; chosen = <b>new</b> List&lt;CardTarget&gt;();
+    chosen.Add(target);
+
+    Resolve(table.Play(selected, chosen));
+    selected = <b>null</b>;
+    ClearHighlights();
+}
+
+<b>void</b> Resolve(PlayResult result)
+{
+    <b>if</b> (!result.played)
+    {
+        <i>// Nothing changed, so just tell them why and carry on.</i>
+        Message(result.refusedBecause);
+        <b>return</b>;
+    }
+
+    ApplyEffect(result);
+    Redraw();
+}
+
+<b>void</b> Redraw()
+{
+    energyLabel.text = table.energy + <u>"/"</u> + table.maxEnergy;
+    drawCountLabel.text = table.drawPile.Count.ToString();
+    discardCountLabel.text = table.discardPile.Count.ToString();
+
+    <b>foreach</b> (CardInstance card <b>in</b> table.hand.GetAll())
+    {
+        <i>// ...draw a card object, greyed out if !table.CanAfford(card)</i>
+    }
+}</pre>
+      </div>
+      <p>Because a refusal changes nothing, calling <code>Play</code> speculatively is always safe — you never need to pre-check the rules yourself and risk the two checks disagreeing.</p>
+    </section>
+
+    <section id="effects">
+      <h2>Recipe: card effects</h2>
+      <p class="section-note">Your own card type, and the one place your game does the work.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">AttackCard.cs</span><button class="copy" type="button">Copy</button></div>
+<pre><b>using</b> UnityEngine;
+
+[CreateAssetMenu(menuName = <u>"Cards/Attack Card"</u>)]
+<b>public class</b> AttackCard : Card
+{
+    <b>public int</b> damage;
+    <b>public int</b> block;
+    <b>public int</b> drawCards;
+    <b>public</b> GameObject hitEffect;
+}</pre>
+      </div>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Applying it</span><button class="copy" type="button">Copy</button></div>
+<pre><b>void</b> ApplyEffect(PlayResult result)
+{
+    <i>// "as" rather than a straight cast, in case your deck mixes card types.</i>
+    AttackCard details = result.card.card <b>as</b> AttackCard;
+    <b>if</b> (details == <b>null</b>) <b>return</b>;
+
+    <b>foreach</b> (CardTarget target <b>in</b> result.targets)
+    {
+        <i>// The object you put in when you built the target list.</i>
+        Enemy enemy = (Enemy)target.thing;
+
+        enemy.TakeDamage(details.damage);
+        Instantiate(details.hitEffect, enemy.transform.position, Quaternion.identity);
+
+        <b>if</b> (enemy.IsDead()) RefreshTargets();   <i>// keep the list honest</i>
+    }
+
+    <b>if</b> (details.block &gt; 0)      player.AddBlock(details.block);
+    <b>if</b> (details.drawCards &gt; 0)  table.Draw(details.drawCards);
+
+    <i>// The escape hatch, same as the other kits.</i>
+    <b>switch</b> (result.card.card.customTag)
+    {
+        <b>case</b> <u>"SCREEN_SHAKE"</u>: camera.Shake(); <b>break</b>;
+    }
+}</pre>
+      </div>
+      <p>Note the last one: a card that draws cards works because the card <em>already left your hand</em> before you got the result. That's deliberate, and it's why a "draw 2" card can never draw itself.</p>
+    </section>
+
+    <section id="saving">
+      <h2>Saving a deck</h2>
+      <p class="section-note">A deck is just a list of IDs, duplicates and all.</p>
+      <div class="code">
+        <div class="code-head"><span class="code-name">Between fights</span><button class="copy" type="button">Copy</button></div>
+<pre><b>void</b> SaveRun()
+{
+    List&lt;<b>string</b>&gt; deck = library.SaveDeck(table.GetEveryCard());
+
+    PlayerPrefs.SetString(<u>"deck"</u>, <b>string</b>.Join(<u>","</u>, deck.ToArray()));
+    PlayerPrefs.Save();
+}
+
+<b>void</b> LoadRun()
+{
+    <b>string</b> stored = PlayerPrefs.GetString(<u>"deck"</u>, <u>""</u>);
+    <b>if</b> (stored == <u>""</u>) { table = library.StartNewGame(); <b>return</b>; }
+
+    List&lt;<b>string</b>&gt; ids = <b>new</b> List&lt;<b>string</b>&gt;(stored.Split(<u>','</u>));
+
+    table = <b>new</b> CardTable();
+    table.StartNewGame(library.LoadDeck(ids));
+}</pre>
+      </div>
+      <p>Cards carry the same permanent hidden ID as the other kits, so renaming and moving your card assets is safe. A card deleted in an update is skipped rather than crashing, so old saves keep loading.</p>
+      <p><code>GetEveryCard()</code> gathers all four piles, so it doesn't matter whether the player quit mid-fight.</p>
+    </section>
+
+    <section id="gotchas">
+      <h2>Four gotchas</h2>
+      <div class="warn">
+        <h3>The card leaves your hand before your effects run</h3>
+        <p>By the time you get the <code>PlayResult</code>, the card is already in the discard or exile pile. That's deliberate — a card that says "draw 2 cards" must not be able to draw itself. If you need to know where it went, check the piles, don't assume it's still in hand.</p>
+      </div>
+      <div class="warn">
+        <h3>Rebuild availableTargets whenever something dies</h3>
+        <p>The kit refuses a target that isn't on the list, which is what stops a card being played on a corpse — but only if you keep the list honest. Rebuild it after every death and every spawn. It's cheap.</p>
+      </div>
+      <div class="warn">
+        <h3>StartNewGame rewinds everything</h3>
+        <p>It clears all four piles and deals a fresh deck. Don't call it to start a turn — that's <code>RefillEnergy</code> and <code>Draw</code>. Same shape of mistake as <code>Play</code> versus <code>Resume</code> in the timeline kit.</p>
+      </div>
+      <div class="warn">
+        <h3>Ctrl+D copies a card's hidden ID</h3>
+        <p>Right-click your Library → <strong>Check For Problems</strong>. It catches that, plus empty slots, starting-deck cards missing from the pool, and cards that need a target but have no <code>targetKind</code> — which can never be played at all.</p>
+      </div>
+    </section>
+
+    <section id="outgrow">
+      <h2>Outgrowing it</h2>
+      <p class="section-note">What this deliberately doesn't do.</p>
+      <dl class="outgrow">
+        <div>
+          <dt>Card effects as data</dt>
+          <dd>Effects are your own C# — the kit only says <em>what</em> was played at <em>what</em>. If you want designers authoring effects in the Inspector, borrow the adventure kit's <code>Effect</code> class; it's built for exactly that.</dd>
+        </div>
+        <div>
+          <dt>Cards that play themselves</dt>
+          <dd>No triggers or "when you draw this" hooks. Watch for them in your own code around <code>Draw</code> — a general trigger system is a much bigger idea and the usual reason card games get complicated.</dd>
+        </div>
+        <div>
+          <dt>Two players</dt>
+          <dd>One table means one deck and one hand. For a duel, make two <code>CardTable</code>s. They don't know about each other, which is fine — your game code is the referee.</dd>
+        </div>
+        <div>
+          <dt>Card upgrades that change stats</dt>
+          <dd><code>costChange</code> is per-copy, but everything else comes from the shared asset. For "upgraded Strike deals 9", make Strike+ a separate asset and swap the instance's card — or add your own fields to <code>CardInstance</code> by subclassing it.</dd>
+        </div>
+        <div>
+          <dt>Animating cards between piles</dt>
+          <dd>The kit moves cards instantly; your UI can animate afterwards by comparing what changed. Each instance's <code>instanceId</code> is stable, so it's a good key for a dictionary of card objects.</dd>
+        </div>
+      </dl>
+    </section>
+
+  </main>
+
+  <footer>
+    Eight scripts. Checked with 102 automated tests covering instance identity and per-copy costs, pile order, shuffle fairness and seed reproducibility, the reshuffle-when-empty loop, running out of cards entirely, hand limits, all four after-play destinations, the card leaving hand before effects, every refusal reason including wrong kind, duplicate picks, corpses and insufficient energy, energy switched off, and deck save/load preserving duplicates and surviving renames.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll(".copy").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var block = button.closest(".code");
+      var pre = block ? block.querySelector("pre") : null;
+      if (!pre) return;
+
+      var done = function (label) {
+        button.textContent = label;
+        setTimeout(function () { button.textContent = "Copy"; }, 1600);
+      };
+
+      try {
+        navigator.clipboard.writeText(pre.innerText).then(
+          function () { done("Copied"); },
+          function () { done("Select it"); }
+        );
+      } catch (e) {
+        done("Select it");
+      }
+    });
+  });
+</script>
+</body>
+</html>
