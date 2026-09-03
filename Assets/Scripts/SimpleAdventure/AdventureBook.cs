@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RogueToolkit.Core.Validation;
 using UnityEngine;
 
 // The asset your game points at: one book per story or per set of events.
@@ -80,6 +81,80 @@ public class AdventureBook : ScriptableObject
         return null;
     }
 
+    // ---------------- validation ----------------
+
+    // Checks the book configuration without changing it.
+    //
+    // The important checks here are about the list used by saving/loading:
+    // every event needs to be a real asset, and no two events may share an ID.
+    public ValidationResult Validate()
+    {
+        ValidationResult result = new ValidationResult();
+
+        if (alsoInclude == null)
+        {
+            result.AddError("Also-include events list is null.", this);
+        }
+
+        if (allEvents == null)
+        {
+            result.AddError("All events list is null.", this);
+            return result;
+        }
+
+        for (int i = 0; i < allEvents.Count; i++)
+        {
+            AdventureEvent evt = allEvents[i];
+
+            if (evt == null)
+            {
+                result.AddError("All events contains a null entry at index " + i + ".", this);
+            }
+        }
+
+        // A duplicated ID is fatal for ID-based saving/loading.
+        for (int i = 0; i < allEvents.Count; i++)
+        {
+            AdventureEvent first = allEvents[i];
+            if (first == null) continue;
+
+            for (int j = i + 1; j < allEvents.Count; j++)
+            {
+                AdventureEvent second = allEvents[j];
+                if (second == null) continue;
+
+                if (first.GetId() == second.GetId())
+                {
+                    result.AddError(
+                        "Two events share the same hidden ID: '" + first.name +
+                        "' and '" + second.name + "'. Fix this by right-clicking '" +
+                        second.name + "' and choosing 'Assign New Id'.",
+                        second);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // Logs validation issues in the Unity Console.
+    // Kept separate from Validate() so the validation method remains useful to
+    // tests and other tools that want to inspect the result themselves.
+    private void LogValidationResult(ValidationResult result)
+    {
+        foreach (ValidationIssue issue in result.Issues)
+        {
+            if (issue.severity == ValidationIssue.Severity.Error)
+            {
+                Debug.LogError(issue.message, issue.source as Object);
+            }
+            else
+            {
+                Debug.LogWarning(issue.message, issue.source as Object);
+            }
+        }
+    }
+
     // Right-click this asset in the Project window and choose "Collect Events".
     // It starts at firstEvent (plus anything in alsoInclude), follows every
     // choice, and fills in allEvents. Re-run it whenever you add events.
@@ -124,32 +199,11 @@ public class AdventureBook : ScriptableObject
 
         Debug.Log("Collect Events: found " + allEvents.Count + " events in " + name);
 
-        CheckForDuplicateIds();
+        LogValidationResult(Validate());
 
 #if UNITY_EDITOR
         // Tells Unity "this asset changed, please write it to disk".
         UnityEditor.EditorUtility.SetDirty(this);
 #endif
-    }
-
-    // Duplicating an event with Ctrl+D copies its hidden ID as well, so two
-    // events look identical to your save file. That is the one thing that breaks
-    // ID-based saving, so we check for it and say exactly what to do.
-    private void CheckForDuplicateIds()
-    {
-        for (int i = 0; i < allEvents.Count; i++)
-        {
-            for (int j = i + 1; j < allEvents.Count; j++)
-            {
-                if (allEvents[i].GetId() == allEvents[j].GetId())
-                {
-                    Debug.LogError(
-                        "Two events share the same hidden ID: '" + allEvents[i].name +
-                        "' and '" + allEvents[j].name + "'. This happens when you " +
-                        "duplicate an event with Ctrl+D. Fix it by right-clicking '" +
-                        allEvents[j].name + "' and choosing 'Assign New Id'.");
-                }
-            }
-        }
     }
 }
