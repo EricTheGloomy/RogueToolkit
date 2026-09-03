@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RogueToolkit.Core.Validation;
 using UnityEngine;
 
 // The single asset your game points at. It holds the list of every node,
@@ -160,6 +161,92 @@ public class NodeGraph : ScriptableObject
         return route;
     }
 
+    // ---------------- validation ----------------
+
+    // Checks the graph configuration without changing it.
+    //
+    // Validation is intentionally separate from CollectNodes. This lets editor
+    // tools, tests, or other code validate an existing graph without having to
+    // rebuild its node list first.
+    public ValidationResult Validate()
+    {
+        ValidationResult result = new ValidationResult();
+
+        if (startingNodes == null)
+        {
+            result.AddError("Starting nodes list is null.", this);
+            return result;
+        }
+
+        if (allNodes == null)
+        {
+            result.AddError("All nodes list is null.", this);
+            return result;
+        }
+
+        for (int i = 0; i < startingNodes.Count; i++)
+        {
+            GraphNode node = startingNodes[i];
+
+            if (node == null)
+            {
+                result.AddError("Starting nodes contains a null entry at index " + i + ".", this);
+            }
+        }
+
+        for (int i = 0; i < allNodes.Count; i++)
+        {
+            GraphNode node = allNodes[i];
+
+            if (node == null)
+            {
+                result.AddError("All nodes contains a null entry at index " + i + ".", this);
+            }
+        }
+
+        // A duplicated ID is fatal for ID-based saving/loading.
+        for (int i = 0; i < allNodes.Count; i++)
+        {
+            GraphNode first = allNodes[i];
+            if (first == null) continue;
+
+            for (int j = i + 1; j < allNodes.Count; j++)
+            {
+                GraphNode second = allNodes[j];
+                if (second == null) continue;
+
+                if (first.GetId() == second.GetId())
+                {
+                    result.AddError(
+                        "Two nodes share the same hidden ID: '" + first.name +
+                        "' and '" + second.name + "'. Fix this by right-clicking '" +
+                        second.name + "' and choosing 'Assign New Id'.",
+                        second);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // Logs validation issues in the Unity Console.
+    // Kept separate from Validate() so the core validation method remains useful
+    // to tests and other tools that want to inspect the result themselves.
+    private void LogValidationResult(ValidationResult result)
+    {
+        foreach (ValidationIssue issue in result.Issues)
+        {
+            if (issue.severity == ValidationIssue.Severity.Error)
+            {
+                Debug.LogError(issue.message, issue.source as Object);
+            }
+            else
+            {
+                Debug.LogWarning(issue.message, issue.source as Object);
+            }
+        }
+    }
+
     // ---------------- editor helper ----------------
 
     // Right-click this asset in the Project window and choose "Collect Nodes".
@@ -206,35 +293,12 @@ public class NodeGraph : ScriptableObject
 
         Debug.Log("Collect Nodes: found " + allNodes.Count + " nodes in " + name);
 
-        CheckForDuplicateIds();
+        LogValidationResult(Validate());
 
 #if UNITY_EDITOR
         // Tells Unity "this asset changed, please save it".
         // Without this, the list you just filled in can be lost on restart.
         UnityEditor.EditorUtility.SetDirty(this);
 #endif
-    }
-
-    // Duplicating a node asset with Ctrl+D copies its hidden ID as well, so two
-    // different nodes end up looking identical to your save file. That is the one
-    // way to break ID-based saving, so we check for it here and tell you exactly
-    // what to do about it.
-    private void CheckForDuplicateIds()
-    {
-        // Compare every node against every node after it in the list.
-        for (int i = 0; i < allNodes.Count; i++)
-        {
-            for (int j = i + 1; j < allNodes.Count; j++)
-            {
-                if (allNodes[i].GetId() == allNodes[j].GetId())
-                {
-                    Debug.LogError(
-                        "Two nodes share the same hidden ID: '" + allNodes[i].name +
-                        "' and '" + allNodes[j].name + "'. This happens when you " +
-                        "duplicate a node with Ctrl+D. Fix it by right-clicking '" +
-                        allNodes[j].name + "' and choosing 'Assign New Id'.");
-                }
-            }
-        }
     }
 }
